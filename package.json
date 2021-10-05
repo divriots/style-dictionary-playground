@@ -1,0 +1,61 @@
+{
+  "name": "@divriots/style-dictionary-playground",
+  "version": "0.1.0",
+  "description": "Style once, use everywhere. A build system for creating cross-platform styles.",
+  "license": "MIT",
+  "author": "divRiots <joren@divriots.com>",
+  "repository": "https://github.com/divriots/style-dictionary-playground",
+  "main": "index.js",
+  "files": [],
+  "scripts": {
+    "dev": "npm run build && concurrently \"node ./run-browserify.js --watch\" \"rollup -c rollup.config.js --watch\" \"webpack --watch\" \"wds --watch --root-dir dist\"",
+    "build": "rimraf dist && node ./run-browserify.js && rollup -c rollup.config.js && webpack",
+    "postinstall": "patch-package"
+  },
+  "dependencies": {
+    "browser-style-dictionary": "^3.0.2",
+    "browserify-fs": "github:jorenbroekema/browserify-fs#unique-id",
+    "buffer": "^6.0.3",
+    "glob": "^7.2.0",
+    "lit": "^2.0.0",
+    "memfs": "^3.3.0",
+    "monaco-editor": "^0.28.1",
+    "pako": "^2.0.4",
+    "process": "^0.11.10"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@web/dev-server": "^0.1.23",
+    "browserify": "^17.0.0",
+    "concurrently": "^6.2.2",
+    "css-loader": "^6.3.0",
+    "file-loader": "^6.2.0",
+    "monaco-editor-webpack-plugin": "^4.2.0",
+    "patch-package": "^6.4.7",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.57.0",
+    "rollup-plugin-copy": "^3.4.0",
+    "style-loader": "^3.3.0",
+    "watchify": "^4.0.0",
+    "webpack": "^5.55.1",
+    "webpack-cli": "^4.8.0",
+    "yargs": "^17.2.1"
+  },
+  "keywords": [
+    "style dictionary",
+    "style",
+    "dictionary",
+    "amazon",
+    "css",
+    "design",
+    "properties",
+    "tokens",
+    "sass",
+    "scss",
+    "iOS",
+    "Android",
+    "react",
+    "react native",
+    "style guide"
+  ]
+}

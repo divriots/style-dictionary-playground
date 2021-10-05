@@ -1,0 +1,27 @@
+## editors
+/.idea
+/.vscode
+/*.code-workspace
+/.history
+
+## system files
+.DS_Store
+
+## npm/yarn
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# we use package-lock.json
+/yarn.lock
+
+## build artifacts
+dist/
+
+## temp files
+local.log
+
+## browserstack
+browserstack.err
+
+debug.log
