@@ -15,7 +15,7 @@ async function saveCurrentFile() {
   if (!selectedFileBtn) {
     return;
   }
-  const selectedFile = selectedFileBtn.innerText;
+  const selectedFile = selectedFileBtn.getAttribute("full-path");
   if (!selectedFile) {
     return;
   }
@@ -26,6 +26,22 @@ async function saveCurrentFile() {
   });
   selectedFileBtn.removeAttribute("unsaved");
   file.onDidSave(`/${selectedFile}`);
+}
+
+async function createFile(filename) {
+  await new Promise((resolve) => {
+    fs.writeFile(filename, "", () => {
+      resolve();
+    });
+  });
+}
+
+async function createFolder(foldername) {
+  await new Promise((resolve) => {
+    fs.mkdir(foldername, (err) => {
+      resolve();
+    });
+  });
 }
 
 async function currentFileContentChanged() {
@@ -63,7 +79,7 @@ function setupFileChangeHandlers() {
     }
   });
   __MONACO_EDITOR__._domElement.addEventListener("keydown", (ev) => {
-    if (ev.key === "s" && ev.ctrlKey) {
+    if (ev.key === "s" && (ev.ctrlKey || ev.metaKey)) {
       ev.preventDefault();
       saveCurrentFile();
     }
@@ -118,7 +134,8 @@ async function createInputFiles(configPath) {
   const urlSplit = window.location.href.split("#project=");
   if (urlSplit.length > 1) {
     const encoded = urlSplit[1];
-    const parsedContents = JSON.parse(atob(encoded));
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const parsedContents = JSON.parse(flate.deflate_decode(encoded));
     await Promise.all(
       Object.entries(parsedContents).map(async ([file, content]) => {
         return new Promise(async (resolve) => {
@@ -126,7 +143,6 @@ async function createInputFiles(configPath) {
           if (dir !== "/") {
             await mkdirRecursive(dir);
           }
-          console.log(file);
           fs.writeFile(
             file,
             JSON.stringify(JSON.parse(content), null, 2),
@@ -140,6 +156,11 @@ async function createInputFiles(configPath) {
   } else {
     await new Promise((resolve) => {
       fs.mkdir(tokensPath, (err) => {
+        resolve();
+      });
+    });
+    await new Promise((resolve) => {
+      fs.mkdir(`${tokensPath}/hello`, (err) => {
         resolve();
       });
     });
@@ -201,7 +222,7 @@ async function createInputFiles(configPath) {
 }
 
 async function populateFileTree() {
-  const files = await asyncGlob("**/*", { fs, nodir: true });
+  const files = await asyncGlob("**/*", { fs, mark: true });
   const fileTreeContainer = document.querySelector("file-tree");
 
   fileTreeContainer.files = files;
@@ -210,6 +231,12 @@ async function populateFileTree() {
   });
   fileTreeContainer.addEventListener("save-current-file", () => {
     saveCurrentFile();
+  });
+  fileTreeContainer.addEventListener("create-file", (ev) => {
+    createFile(ev.detail);
+  });
+  fileTreeContainer.addEventListener("create-folder", (ev) => {
+    createFolder(ev.detail);
   });
 }
 
@@ -233,7 +260,7 @@ async function encodeContents(files) {
     })
   );
   const content = JSON.stringify(contents);
-  return btoa(content);
+  return flate.deflate_encode(content);
 }
 
 module.exports = {

@@ -1,5 +1,7 @@
 import copy from "rollup-plugin-copy";
+import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import image from "@rollup/plugin-image";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -55,6 +57,17 @@ export default [
       format: "es",
       file: "dist/index.js",
     },
-    plugins: [nodeResolve()],
+    plugins: [
+      nodeResolve(),
+      json(),
+      copy({
+        targets: [
+          {
+            src: path.resolve("src", "seti-icons"),
+            dest: "dist",
+          },
+        ],
+      }),
+    ],
   },
 ];
