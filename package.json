@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "browser-style-dictionary": "^3.0.2",
-    "browserify-fs": "github:jorenbroekema/browserify-fs#unique-id",
     "buffer": "^6.0.3",
     "glob": "^7.2.0",
     "lit": "^2.0.0",
