@@ -159,11 +159,6 @@ async function createInputFiles(configPath) {
         resolve();
       });
     });
-    await new Promise((resolve) => {
-      fs.mkdir(`${tokensPath}/hello`, (err) => {
-        resolve();
-      });
-    });
     // Create SD config
     await new Promise((resolve) => {
       fs.writeFile(
