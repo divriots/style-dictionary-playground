@@ -6,7 +6,8 @@ const {
   deleteLeftoverDB,
   createInputFiles,
   setupFileChangeHandlers,
-  file,
+  hooks,
+  initFileTree,
   encodeContents,
 } = require("./file-tree-utils.js");
 const runStyleDictionary = require("./run-style-dictionary.js");
@@ -19,8 +20,10 @@ let sd;
   await createInputFiles(configPath);
   await deleteLeftoverDB();
   sd = await runStyleDictionary(configPath);
+  await initFileTree();
   setupFileChangeHandlers();
-  file.onDidSave = async (file) => {
+  hooks.runStyleDictionary = () => runStyleDictionary(configPath);
+  hooks.onDidSave = async (file) => {
     const { source } = sd.options;
     const sourceFiles = new Set();
     await Promise.all(

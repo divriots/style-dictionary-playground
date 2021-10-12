@@ -1,7 +1,7 @@
 const fs = require("fs");
 const glob = require("glob");
 const util = require("util");
-const { populateFileTree } = require("./file-tree-utils.js");
+const { repopulateFileTree } = require("./file-tree-utils.js");
 const StyleDictionary = require("browser-style-dictionary/browser.js");
 const asyncGlob = util.promisify(glob);
 
@@ -36,7 +36,7 @@ module.exports = async function (configPath) {
   await cleanPlatformOutputDirs();
   const newStyleDictionary = await StyleDictionary.extend(configPath);
   await newStyleDictionary.buildAllPlatforms();
-  await populateFileTree();
+  await repopulateFileTree();
   oldStyleDictionary = newStyleDictionary;
   return newStyleDictionary;
 };

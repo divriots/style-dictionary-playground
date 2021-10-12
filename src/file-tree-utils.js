@@ -25,7 +25,7 @@ async function saveCurrentFile() {
     });
   });
   selectedFileBtn.removeAttribute("unsaved");
-  file.onDidSave(`/${selectedFile}`);
+  hooks.onDidSave(`/${selectedFile}`);
 }
 
 async function createFile(filename) {
@@ -42,6 +42,23 @@ async function createFolder(foldername) {
       resolve();
     });
   });
+}
+
+async function removeFile(ev) {
+  if (ev.detail.endsWith("/")) {
+    await new Promise((resolve) => {
+      fs.rmdir(ev.detail, { recursive: true }, () => {
+        resolve();
+      });
+    });
+  } else {
+    await new Promise((resolve) => {
+      fs.unlink(ev.detail, () => {
+        resolve();
+      });
+    });
+  }
+  await repopulateFileTree();
 }
 
 async function currentFileContentChanged() {
@@ -69,8 +86,9 @@ async function switchToFile(file) {
   window.__MONACO_EDITOR__.setScrollTop(0);
 }
 
-const file = {};
-file.onDidSave = (file) => {};
+const hooks = {};
+hooks.onDidSave = (file) => {};
+hooks.runStyleDictionary = () => {};
 
 function setupFileChangeHandlers() {
   __MONACO_EDITOR__.onDidChangeModelContent((ev) => {
@@ -216,23 +234,30 @@ async function createInputFiles(configPath) {
   }
 }
 
-async function populateFileTree() {
+async function repopulateFileTree() {
   const files = await asyncGlob("**/*", { fs, mark: true });
   const fileTreeContainer = document.querySelector("file-tree");
 
   fileTreeContainer.files = files;
-  fileTreeContainer.addEventListener("switch-file", (ev) => {
-    switchToFile(ev.detail);
-  });
-  fileTreeContainer.addEventListener("save-current-file", () => {
-    saveCurrentFile();
-  });
-  fileTreeContainer.addEventListener("create-file", (ev) => {
-    createFile(ev.detail);
-  });
-  fileTreeContainer.addEventListener("create-folder", (ev) => {
-    createFolder(ev.detail);
-  });
+  return fileTreeContainer;
+}
+
+async function initFileTree() {
+  const fileTreeContainer = await repopulateFileTree();
+  fileTreeContainer.addEventListener("run-style-dictionary", () =>
+    hooks.runStyleDictionary()
+  );
+  fileTreeContainer.addEventListener("switch-file", (ev) =>
+    switchToFile(ev.detail)
+  );
+  fileTreeContainer.addEventListener("save-current-file", saveCurrentFile);
+  fileTreeContainer.addEventListener("create-file", (ev) =>
+    createFile(ev.detail)
+  );
+  fileTreeContainer.addEventListener("create-folder", (ev) =>
+    createFolder(ev.detail)
+  );
+  fileTreeContainer.addEventListener("remove-file", (ev) => removeFile(ev));
 }
 
 function changeLang(lang) {
@@ -259,11 +284,12 @@ async function encodeContents(files) {
 }
 
 module.exports = {
-  file,
+  hooks,
   setupFileChangeHandlers,
   deleteLeftoverDB,
   createInputFiles,
-  populateFileTree,
+  initFileTree,
+  repopulateFileTree,
   changeLang,
   encodeContents,
 };

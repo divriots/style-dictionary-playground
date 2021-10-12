@@ -11,16 +11,32 @@
   </head>
   <body style="height: 50vh">
     <h1>Style-dictionary playground</h1>
-    <h2>Very very alpha state.</h2>
-    <h3>TODO:</h3>
-    <ul>
-      <li>Support deleting files/folders</li>
-      <li>Optimize</li>
-      <li>Clean up code</li>
-    </ul>
+    <h2>Try out and experiment with style-dictionary in your browser!</h2>
     <div class="playground-container">
       <file-tree></file-tree>
       <div style="height: 100%" id="monaco-container"></div>
+    </div>
+    <div class="explainer">
+      <h3>How it works</h3>
+      <p>
+        We use a
+        <a href="https://www.npmjs.com/package/browser-style-dictionary"
+          >browser patch</a
+        >
+        of
+        <a href="https://amzn.github.io/style-dictionary">style-dictionary</a>
+        in combination with <a>browserify</a> and a shim for file-system (e.g.
+        <code>memfs</code> or <code>browserify-fs</code>) to make the tool work
+        in the browser.
+      </p>
+      <p>
+        We then use monaco-editor and some file-tree utilities to make the
+        playground editor work with it.
+      </p>
+      <p>
+        The input files are encoded in the URL when you save files, making
+        playground snippets easy to share with others!
+      </p>
     </div>
     <script type="module" src="./monaco.js"></script>
     <script type="module" src="./index-node.js"></script>

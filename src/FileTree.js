@@ -97,10 +97,11 @@ class FileTree extends LitElement {
         .new {
           display: flex;
           justify-content: flex-end;
+          margin-bottom: 8px;
         }
 
         .new > .codicon {
-          padding: 0.25em;
+          padding: 0.5em;
           background-color: transparent;
           color: white;
           border: none;
@@ -109,6 +110,10 @@ class FileTree extends LitElement {
 
         .new > .codicon:hover {
           background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .codicon-play {
+          flex-grow: 1;
         }
       `,
     ];
@@ -130,7 +135,7 @@ class FileTree extends LitElement {
 
   /* Get the full file path of the checked file */
   get checkedFile() {
-    return this.checkedFileBtn.getAttribute("full-path");
+    return this.checkedFileBtn?.getAttribute("full-path");
   }
 
   get checkedFolderEl() {
@@ -140,7 +145,7 @@ class FileTree extends LitElement {
   }
 
   get checkedFolder() {
-    return this.checkedFolderEl.getAttribute("full-path");
+    return this.checkedFolderEl?.getAttribute("full-path");
   }
 
   /* Get DOM node of the file that is unsaved, can only be one for now because we auto-save onFocusChange */
@@ -225,6 +230,7 @@ class FileTree extends LitElement {
     super();
     this.files = [];
     this.focusInRoot = true;
+    this.lastSelectedElement;
   }
 
   connectedCallback() {
@@ -241,8 +247,14 @@ class FileTree extends LitElement {
 
   updated(changedProperties) {
     super.updated(changedProperties);
-    if (changedProperties.has("files") && !this.checkedFileBtn) {
-      this.switchToFile(0);
+    if (
+      changedProperties.has("files") &&
+      !this.checkedFileBtn &&
+      this.files.length > 0
+    ) {
+      this.switchToFile(0).then(() => {
+        this.openParentFolders();
+      });
     }
   }
 
@@ -250,6 +262,11 @@ class FileTree extends LitElement {
     return html`
       <div id="file-list">
         <div class="new">
+          <button
+            @click=${this.play}
+            @keydown=${this.play}
+            class="codicon codicon-play"
+          ></button>
           <button
             @click=${() => this.newFileOrFolder("folder")}
             @keydown=${() => this.newFileOrFolder("folder")}
@@ -259,6 +276,11 @@ class FileTree extends LitElement {
             @click=${() => this.newFileOrFolder("file")}
             @keydown=${() => this.newFileOrFolder("file")}
             class="codicon codicon-new-file"
+          ></button>
+          <button
+            @click=${() => this.removeFileOrFolder()}
+            @keydown=${() => this.removeFileOrFolder()}
+            class="codicon codicon-trash"
           ></button>
         </div>
         ${this.asDetails(this.filesAsTree(this.files))}
@@ -292,8 +314,8 @@ class FileTree extends LitElement {
                 tabindex="0"
                 class="row file"
                 full-path="${memo}${k}"
-                @keydown=${() => this.switchToFile(`${memo}${k}`)}
-                @click=${() => this.switchToFile(`${memo}${k}`)}
+                @keydown=${this.rowClick}
+                @click=${this.rowClick}
               >
                 ${this.getLogoFromFileName(k)}
                 <span> ${k} </span>
@@ -302,8 +324,8 @@ class FileTree extends LitElement {
           : html`
               <details>
                 <summary
-                  @keydown=${this.clickFolder}
-                  @click=${this.clickFolder}
+                  @keydown=${this.rowClick}
+                  @click=${this.rowClick}
                   class="row folder-row"
                   full-path="${memo}${k}"
                 >
@@ -316,6 +338,10 @@ class FileTree extends LitElement {
     `;
   }
 
+  play() {
+    this.dispatchEvent(new Event("run-style-dictionary"));
+  }
+
   uncheckFolders() {
     const allFolders = Array.from(
       this.shadowRoot.querySelectorAll(".folder-row")
@@ -323,6 +349,37 @@ class FileTree extends LitElement {
     allFolders.forEach((folder) => {
       folder.removeAttribute("checked");
     });
+  }
+
+  openParentFolders() {
+    // open parent folders
+    if (this.checkedFile) {
+      const parts = this.checkedFile.split("/");
+      let path = "";
+      parts.forEach((part) => {
+        path += part;
+        const el = this.shadowRoot.querySelector(`[full-path="${path}"]`);
+        if (el) {
+          el.click();
+        }
+        path += "/";
+      }, "");
+    }
+  }
+
+  rowClick(ev) {
+    let { target } = ev;
+
+    // get the "actual" target if the event came from the inner span
+    if (target.tagName === "SPAN") {
+      target = target.closest(".file, .folder-row");
+    }
+    this.lastSelectedElement = target;
+    if (target.classList.contains("file")) {
+      this.switchToFile(target.getAttribute("full-path"));
+    } else if (target.classList.contains("folder-row")) {
+      this.clickFolder(ev);
+    }
   }
 
   clickFolder(ev) {
@@ -373,6 +430,9 @@ class FileTree extends LitElement {
   async addFileOrFolder(filename, folder, input, type) {
     try {
       input.remove();
+      if (filename === "") {
+        return;
+      }
       const fullPath = `${folder ? `${folder}/` : ""}${filename}`;
       const fullPathNormalized = `${fullPath}${type === "folder" ? "/" : ""}`;
       this.files = [...this.files, fullPathNormalized];
@@ -389,11 +449,24 @@ class FileTree extends LitElement {
     } catch (e) {}
   }
 
+  async removeFileOrFolder() {
+    const lastSelectedFile = this.lastSelectedElement.getAttribute("full-path");
+    this.dispatchEvent(
+      new CustomEvent("remove-file", {
+        detail: `${lastSelectedFile}${
+          this.lastSelectedElement.classList.contains("folder-row") ? "/" : ""
+        }`,
+      })
+    );
+  }
+
   // TODO: clean this up, bit messy..
   async switchToFile(indexOrName) {
     await this.updateComplete;
     if (this.unsavedFileBtn) {
-      this.dispatchEvent(new Event("save-current-file"));
+      this.dispatchEvent(
+        new CustomEvent("save-current-file", { detail: this.unsavedFile })
+      );
     }
     if (this.checkedFileBtn) {
       this.checkedFileBtn.removeAttribute("checked");

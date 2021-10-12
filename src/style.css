@@ -10,6 +10,17 @@
 html,
 body {
   font-family: sans-serif;
+  background-color: rgb(15, 15, 15);
+  color: white;
+}
+
+body {
+  padding: 2rem;
+}
+
+h1,
+h2 {
+  text-align: center;
 }
 
 .playground-container {
@@ -19,4 +30,9 @@ body {
 
 #monaco-container {
   flex-grow: 1;
+}
+
+.explainer {
+  max-width: 1000px;
+  margin: 5rem auto;
 }
