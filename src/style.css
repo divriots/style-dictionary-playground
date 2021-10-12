@@ -43,6 +43,8 @@ h1 {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 5px 6px rgb(0 0 0 / 50%);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 #monaco-container {
@@ -52,4 +54,5 @@ h1 {
 .explainer {
   max-width: 1000px;
   margin: 5rem auto;
+  padding-bottom: 5rem;
 }

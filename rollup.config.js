@@ -38,7 +38,7 @@ const plugins = [
         dest: "dist",
       },
       {
-        src: path.resolve("src", "logo.png"),
+        src: path.resolve("src", "assets"),
         dest: "dist",
       },
     ],
@@ -55,22 +55,11 @@ export default [
     plugins,
   },
   {
-    input: "src/index.mjs",
+    input: "src/browser/index.mjs",
     output: {
       format: "es",
       file: "dist/index.js",
     },
-    plugins: [
-      nodeResolve(),
-      json(),
-      copy({
-        targets: [
-          {
-            src: path.resolve("src", "seti-icons"),
-            dest: "dist",
-          },
-        ],
-      }),
-    ],
+    plugins: [nodeResolve(), json()],
   },
 ];

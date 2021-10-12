@@ -32,7 +32,7 @@ function fsTransform(file) {
 }
 
 const b = browserify({
-  entries: ["./src/index.js"],
+  entries: ["./src/node/index.js"],
   cache: {},
   packageCache: {},
   plugin: argv.watch ? [watchify] : [],

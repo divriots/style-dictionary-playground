@@ -1,5 +1,5 @@
 import { LitElement, css, html } from "lit";
-import * as seti from "./seti-theme.json";
+import * as seti from "../assets/seti-theme.json";
 import codicon from "./codicon.css.js";
 class FileTree extends LitElement {
   static get properties() {
@@ -324,7 +324,7 @@ class FileTree extends LitElement {
     }
     const iconDef = seti.iconDefinitions[fileExt];
     return html`<img
-      src="./seti-icons/${fileExt.replace("_", "")}.svg"
+      src="./assets/seti-icons/${fileExt.replace("_", "")}.svg"
       style="fill: ${iconDef.fontColor}"
     />`;
   }
