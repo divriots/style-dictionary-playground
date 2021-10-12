@@ -41,10 +41,20 @@ h1 {
   height: 100%;
   display: flex;
   border-radius: 10px;
-  overflow: hidden;
   box-shadow: 0 5px 6px rgb(0 0 0 / 50%);
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.overflow-guard,
+.monaco-editor {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+file-tree {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
 }
 
 #monaco-container {
