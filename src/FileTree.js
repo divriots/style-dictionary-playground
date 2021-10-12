@@ -268,14 +268,14 @@ class FileTree extends LitElement {
             class="codicon codicon-play"
           ></button>
           <button
-            @click=${() => this.newFileOrFolder("folder")}
-            @keydown=${() => this.newFileOrFolder("folder")}
-            class="codicon codicon-new-folder"
-          ></button>
-          <button
             @click=${() => this.newFileOrFolder("file")}
             @keydown=${() => this.newFileOrFolder("file")}
             class="codicon codicon-new-file"
+          ></button>
+          <button
+            @click=${() => this.newFileOrFolder("folder")}
+            @keydown=${() => this.newFileOrFolder("folder")}
+            class="codicon codicon-new-folder"
           ></button>
           <button
             @click=${() => this.removeFileOrFolder()}
