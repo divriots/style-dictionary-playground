@@ -177,6 +177,12 @@ async function createInputFiles(configPath) {
         resolve();
       });
     });
+
+    await new Promise((resolve) => {
+      fs.mkdir(`${tokensPath}/color`, (err) => {
+        resolve();
+      });
+    });
     // Create SD config
     await new Promise((resolve) => {
       fs.writeFile(
@@ -186,13 +192,23 @@ async function createInputFiles(configPath) {
             source: ["tokens/**/*.json"],
             platforms: {
               scss: {
-                transformGroup: "scss",
+                transformGroup: "css",
                 prefix: "sd",
-                buildPath: "build/scss/",
+                buildPath: "build/css/",
                 files: [
                   {
-                    destination: "_variables.scss",
-                    format: "scss/variables",
+                    destination: "_variables.css",
+                    format: "css/variables",
+                  },
+                ],
+              },
+              js: {
+                transformGroup: "js",
+                buildPath: "build/js/",
+                files: [
+                  {
+                    destination: "variables.js",
+                    format: "javascript/es6",
                   },
                 ],
               },
@@ -210,16 +226,41 @@ async function createInputFiles(configPath) {
     // Create some tokens (color)
     await new Promise((resolve) => {
       fs.writeFile(
-        path.join(tokensPath, "color.json"),
+        path.join(`${tokensPath}/color`, "base.json"),
         JSON.stringify(
           {
             color: {
-              firebrick: { value: "#B22222" },
-              orchid: { value: "#DA70D6" },
-              turquoise: {
-                pale: { value: "#AFEEEE" },
-                medium: { value: "#48D1CC" },
-                dark: { value: "#00CED1" },
+              base: {
+                gray: {
+                  light: { value: "#CCCCCC" },
+                  medium: { value: "#999999" },
+                  dark: { value: "#111111" },
+                },
+                red: { value: "#FF0000" },
+                green: { value: "#00FF00" },
+              },
+            },
+          },
+          null,
+          2
+        ),
+        (err) => {
+          resolve();
+        }
+      );
+    });
+
+    // Create some tokens (color)
+    await new Promise((resolve) => {
+      fs.writeFile(
+        path.join(`${tokensPath}/color`, "font.json"),
+        JSON.stringify(
+          {
+            color: {
+              font: {
+                base: { value: "{color.base.red.value}" },
+                secondary: { value: "{color.base.green.value}" },
+                tertiary: { value: "{color.base.gray.light.value}" },
               },
             },
           },
@@ -236,28 +277,48 @@ async function createInputFiles(configPath) {
 
 async function repopulateFileTree() {
   const files = await asyncGlob("**/*", { fs, mark: true });
-  const fileTreeContainer = document.querySelector("file-tree");
+  const fileTreeEl = document.querySelector("file-tree");
+  fileTreeEl.files = files;
+}
 
-  fileTreeContainer.files = files;
-  return fileTreeContainer;
+async function clearAll() {
+  const files = await asyncGlob("**/*", { fs, mark: true });
+  const filtered = files.filter((file) => file !== "sd.config.json");
+  await Promise.all(
+    filtered.map((file) => {
+      return new Promise(async (resolve) => {
+        if (file.endsWith("/")) {
+          await new Promise((resolve) => {
+            fs.rmdir(file, { recursive: true }, () => {
+              resolve();
+            });
+          });
+        } else if (!file.match("/")) {
+          await new Promise((resolve) => {
+            fs.unlink(file, () => {
+              resolve();
+            });
+          });
+        }
+        resolve();
+      });
+    })
+  );
+  await repopulateFileTree();
 }
 
 async function initFileTree() {
-  const fileTreeContainer = await repopulateFileTree();
-  fileTreeContainer.addEventListener("run-style-dictionary", () =>
+  const fileTreeEl = document.querySelector("file-tree");
+  fileTreeEl.addEventListener("run-style-dictionary", () =>
     hooks.runStyleDictionary()
   );
-  fileTreeContainer.addEventListener("switch-file", (ev) =>
-    switchToFile(ev.detail)
-  );
-  fileTreeContainer.addEventListener("save-current-file", saveCurrentFile);
-  fileTreeContainer.addEventListener("create-file", (ev) =>
-    createFile(ev.detail)
-  );
-  fileTreeContainer.addEventListener("create-folder", (ev) =>
-    createFolder(ev.detail)
-  );
-  fileTreeContainer.addEventListener("remove-file", (ev) => removeFile(ev));
+  fileTreeEl.addEventListener("switch-file", (ev) => switchToFile(ev.detail));
+  fileTreeEl.addEventListener("save-current-file", saveCurrentFile);
+  fileTreeEl.addEventListener("create-file", (ev) => createFile(ev.detail));
+  fileTreeEl.addEventListener("create-folder", (ev) => createFolder(ev.detail));
+  fileTreeEl.addEventListener("remove-file", (ev) => removeFile(ev));
+  fileTreeEl.addEventListener("clear-all", clearAll);
+  await repopulateFileTree();
 }
 
 function changeLang(lang) {

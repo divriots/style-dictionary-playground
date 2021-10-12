@@ -37,6 +37,10 @@ const plugins = [
         src: path.resolve("src", "style.css"),
         dest: "dist",
       },
+      {
+        src: path.resolve("src", "logo.png"),
+        dest: "dist",
+      },
     ],
   }),
 ];

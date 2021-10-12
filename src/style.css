@@ -9,13 +9,23 @@
 
 html,
 body {
-  font-family: sans-serif;
-  background-color: rgb(15, 15, 15);
-  color: white;
+  font-family: "Source Sans Pro", sans-serif;
+  background-color: rgb(217, 248, 245);
+  color: #2e2e46;
 }
 
 body {
   padding: 2rem;
+}
+
+.logo-link {
+  margin: 0 auto;
+  width: max-content;
+  display: block;
+}
+
+.logo-link img {
+  width: 160px;
 }
 
 h1,
@@ -23,9 +33,16 @@ h2 {
   text-align: center;
 }
 
+h1 {
+  color: #34495e;
+}
+
 .playground-container {
   height: 100%;
   display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 6px rgb(0 0 0 / 50%);
 }
 
 #monaco-container {

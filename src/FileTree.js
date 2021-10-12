@@ -100,7 +100,8 @@ class FileTree extends LitElement {
           margin-bottom: 8px;
         }
 
-        .new > .codicon {
+        .new > .codicon,
+        .clear > .codicon {
           padding: 0.5em;
           background-color: transparent;
           color: white;
@@ -108,12 +109,28 @@ class FileTree extends LitElement {
           cursor: pointer;
         }
 
-        .new > .codicon:hover {
+        .new > .codicon:hover,
+        .clear > .codicon:hover {
           background-color: rgba(255, 255, 255, 0.1);
         }
 
         .codicon-play {
           flex-grow: 1;
+        }
+
+        #file-list {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+
+        .clear {
+          width: 100%;
+          flex-grow: 1;
+          align-self: center;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
         }
       `,
     ];
@@ -263,27 +280,34 @@ class FileTree extends LitElement {
       <div id="file-list">
         <div class="new">
           <button
+            title="Run Style Dictionary"
             @click=${this.play}
-            @keydown=${this.play}
             class="codicon codicon-play"
           ></button>
           <button
+            title="New File"
             @click=${() => this.newFileOrFolder("file")}
-            @keydown=${() => this.newFileOrFolder("file")}
             class="codicon codicon-new-file"
           ></button>
           <button
+            title="New Folder"
             @click=${() => this.newFileOrFolder("folder")}
-            @keydown=${() => this.newFileOrFolder("folder")}
             class="codicon codicon-new-folder"
           ></button>
           <button
+            title="Remove current file or folder"
             @click=${() => this.removeFileOrFolder()}
-            @keydown=${() => this.removeFileOrFolder()}
             class="codicon codicon-trash"
           ></button>
         </div>
-        ${this.asDetails(this.filesAsTree(this.files))}
+        <div>${this.asDetails(this.filesAsTree(this.files))}</div>
+        <div class="clear">
+          <button
+            title="Clear all files"
+            @click=${this.clearAll}
+            class="codicon codicon-clear-all"
+          ></button>
+        </div>
       </div>
     `;
   }
@@ -342,6 +366,10 @@ class FileTree extends LitElement {
     this.dispatchEvent(new Event("run-style-dictionary"));
   }
 
+  clearAll() {
+    this.dispatchEvent(new Event("clear-all"));
+  }
+
   uncheckFolders() {
     const allFolders = Array.from(
       this.shadowRoot.querySelectorAll(".folder-row")
@@ -368,9 +396,13 @@ class FileTree extends LitElement {
   }
 
   rowClick(ev) {
-    let { target } = ev;
+    let { target, key } = ev;
 
-    // get the "actual" target if the event came from the inner span
+    if (key && key !== "Space" && key !== "Enter") {
+      return;
+    }
+
+    // get the "actual" target if the event originally came from the inner span
     if (target.tagName === "SPAN") {
       target = target.closest(".file, .folder-row");
     }
@@ -491,7 +523,6 @@ class FileTree extends LitElement {
         parentFolder.setAttribute("checked", "");
       }
     }
-
     this.dispatchEvent(
       new CustomEvent("switch-file", {
         detail: filename,
