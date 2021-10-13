@@ -351,11 +351,13 @@ class FileTree extends LitElement {
   }
 
   editorLayout() {
-    requestAnimationFrame(async () => {
+    // Need to wait for monaco to catch up to the fact that container size changed (potentially)
+    // TODO: check if there's a lifecycle hook that we can use instead..
+    setTimeout(async () => {
       await window.ensureMonacoIsLoaded();
       window.monaco_editor.layout({});
       window.monaco_editor.layout();
-    });
+    }, 10);
   }
 
   getLogoFromFileName(filename) {
