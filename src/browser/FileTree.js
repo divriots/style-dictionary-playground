@@ -1,10 +1,11 @@
 import { LitElement, css, html } from "lit";
-import * as seti from "../assets/seti-theme.json";
 import codicon from "./codicon.css.js";
+import iconDefinitions from "./iconDefinitions.js";
 class FileTree extends LitElement {
   static get properties() {
     return {
-      files: { attribute: false },
+      inputFiles: { attribute: false },
+      outputFiles: { attribute: false },
     };
   }
 
@@ -17,13 +18,13 @@ class FileTree extends LitElement {
           flex-direction: column;
           align-items: stretch;
           background-color: #171717;
-          width: 200px;
-          overflow-x: auto;
+          max-width: 400px;
           position: relative;
         }
 
         #file-list {
           color: white;
+          overflow-y: auto;
         }
 
         .file,
@@ -56,10 +57,13 @@ class FileTree extends LitElement {
 
         .row {
           cursor: pointer;
+
+          padding-right: 1rem;
         }
 
         img {
-          width: 25px;
+          width: 18px;
+          padding: 5px;
           display: block;
         }
 
@@ -70,8 +74,7 @@ class FileTree extends LitElement {
           right: 0.375rem;
         }
 
-        .file:hover,
-        summary:hover {
+        .row:hover {
           background-color: #292929;
         }
 
@@ -97,7 +100,11 @@ class FileTree extends LitElement {
         .new {
           display: flex;
           justify-content: flex-end;
+          position: sticky;
+          top: 0;
           margin-bottom: 8px;
+          background-color: #171717;
+          border-top-left-radius: var(--border-radius-editor);
         }
 
         .new > .codicon,
@@ -124,13 +131,37 @@ class FileTree extends LitElement {
           height: 100%;
         }
 
-        .clear {
-          width: 100%;
+        .output-files {
           flex-grow: 1;
-          align-self: center;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
+        }
+
+        .output-files > p {
+          padding-top: 0.5rem;
+          margin: 1.5rem 0 0.5rem 0;
+          text-align: center;
+          border-top: 1px solid white;
+        }
+
+        .clear {
+          width: 100%;
+          position: sticky;
+          bottom: 0;
+          display: flex;
+          justify-content: center;
+        }
+
+        .clear > .codicon {
+          width: 100%;
+          background-color: #171717;
+          border-bottom-left-radius: var(--border-radius-editor);
+        }
+
+        .clear > .codicon:hover {
+          background-color: rgb(23, 23, 23);
+          filter: brightness(1.7);
         }
       `,
     ];
@@ -245,7 +276,8 @@ class FileTree extends LitElement {
 
   constructor() {
     super();
-    this.files = [];
+    this.inputFiles = [];
+    this.outputFiles = [];
     this.focusInRoot = true;
     this.lastSelectedElement;
   }
@@ -265,9 +297,9 @@ class FileTree extends LitElement {
   updated(changedProperties) {
     super.updated(changedProperties);
     if (
-      changedProperties.has("files") &&
+      changedProperties.has("outputFiles") &&
       !this.checkedFileBtn &&
-      this.files.length > 0
+      this.outputFiles.length > 0
     ) {
       this.switchToFile(0).then(() => {
         this.openParentFolders();
@@ -277,7 +309,7 @@ class FileTree extends LitElement {
 
   render() {
     return html`
-      <div id="file-list">
+      <div id="file-list" @click=${this.editorLayout}>
         <div class="new">
           <button
             title="Run Style Dictionary"
@@ -300,7 +332,13 @@ class FileTree extends LitElement {
             class="codicon codicon-trash"
           ></button>
         </div>
-        <div>${this.asDetails(this.filesAsTree(this.files))}</div>
+        <div class="input-files">
+          ${this.asDetails(this.filesAsTree(this.inputFiles))}
+        </div>
+        <div class="output-files">
+          <p>Output files:</p>
+          ${this.asDetails(this.filesAsTree(this.outputFiles))}
+        </div>
         <div class="clear">
           <button
             title="Clear all files"
@@ -312,20 +350,22 @@ class FileTree extends LitElement {
     `;
   }
 
+  editorLayout() {
+    requestAnimationFrame(async () => {
+      await window.ensureMonacoIsLoaded();
+      window.monaco_editor.layout({});
+      window.monaco_editor.layout();
+    });
+  }
+
   getLogoFromFileName(filename) {
     const spl = filename.split(".");
     const ext = spl[spl.length - 1];
-    let fileExt = seti.fileExtensions[ext];
-    if (!fileExt) {
-      fileExt = seti.languageIds[ext];
-    }
-    if (!fileExt) {
-      return;
-    }
-    const iconDef = seti.iconDefinitions[fileExt];
+    const icon =
+      iconDefinitions.icons.find((def) => def.fileExtensions?.includes(ext))
+        ?.name || iconDefinitions.defaultIcon.name;
     return html`<img
-      src="./assets/seti-icons/${fileExt.replace("_", "")}.svg"
-      style="fill: ${iconDef.fontColor}"
+      src="https://unpkg.com/material-icon-theme@3.7.1/icons/${icon}.svg"
     />`;
   }
 
@@ -467,7 +507,7 @@ class FileTree extends LitElement {
       }
       const fullPath = `${folder ? `${folder}/` : ""}${filename}`;
       const fullPathNormalized = `${fullPath}${type === "folder" ? "/" : ""}`;
-      this.files = [...this.files, fullPathNormalized];
+      this.inputFiles = [...this.inputFiles, fullPathNormalized];
       this.dispatchEvent(
         new CustomEvent(`create-${type}`, { detail: fullPathNormalized })
       );
