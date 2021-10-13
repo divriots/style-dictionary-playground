@@ -21,7 +21,7 @@ let sd;
   await deleteLeftoverDB();
   sd = await runStyleDictionary(configPath);
   await initFileTree();
-  setupFileChangeHandlers();
+  await setupFileChangeHandlers();
   hooks.runStyleDictionary = () => runStyleDictionary(configPath);
   hooks.onDidSave = async (file) => {
     const { source } = sd.options;
@@ -50,10 +50,12 @@ let sd;
     ]);
     window.location.href = `${window.location.origin}/#project=${encoded}`;
   };
-  window.addEventListener("resize", () => {
-    __MONACO_EDITOR__.layout({});
-    __MONACO_EDITOR__.layout();
+  window.addEventListener("resize", async () => {
+    await window.ensureMonacoIsLoaded();
+    window.monaco_editor.layout({});
+    window.monaco_editor.layout();
   });
-  __MONACO_EDITOR__.layout({});
-  __MONACO_EDITOR__.layout();
+  await window.ensureMonacoIsLoaded();
+  window.monaco_editor.layout({});
+  window.monaco_editor.layout();
 })();

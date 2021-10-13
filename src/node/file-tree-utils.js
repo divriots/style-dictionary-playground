@@ -19,8 +19,9 @@ async function saveCurrentFile() {
   if (!selectedFile) {
     return;
   }
-  await new Promise((resolve) => {
-    fs.writeFile(selectedFile, __MONACO_EDITOR__.getValue(), () => {
+  await new Promise(async (resolve) => {
+    await window.ensureMonacoIsLoaded();
+    fs.writeFile(selectedFile, window.monaco_editor.getValue(), () => {
       resolve();
     });
   });
@@ -81,22 +82,24 @@ async function switchToFile(file) {
       resolve(data);
     });
   });
-  window.__MONACO_EDITOR__.setValue(fileData);
-  changeLang(lang);
-  window.__MONACO_EDITOR__.setScrollTop(0);
+  await window.ensureMonacoIsLoaded();
+  window.monaco_editor.setValue(fileData);
+  await changeLang(lang);
+  window.monaco_editor.setScrollTop(0);
 }
 
 const hooks = {};
 hooks.onDidSave = (file) => {};
 hooks.runStyleDictionary = () => {};
 
-function setupFileChangeHandlers() {
-  __MONACO_EDITOR__.onDidChangeModelContent((ev) => {
+async function setupFileChangeHandlers() {
+  await window.ensureMonacoIsLoaded();
+  window.monaco_editor.onDidChangeModelContent((ev) => {
     if (!ev.isFlush) {
       currentFileContentChanged();
     }
   });
-  __MONACO_EDITOR__._domElement.addEventListener("keydown", (ev) => {
+  window.monaco_editor._domElement.addEventListener("keydown", (ev) => {
     if (ev.key === "s" && (ev.ctrlKey || ev.metaKey)) {
       ev.preventDefault();
       saveCurrentFile();
@@ -321,11 +324,9 @@ async function initFileTree() {
   await repopulateFileTree();
 }
 
-function changeLang(lang) {
-  window.__MONACO__.editor.setModelLanguage(
-    window.__MONACO_EDITOR__.getModel(),
-    lang
-  );
+async function changeLang(lang) {
+  await window.ensureMonacoIsLoaded();
+  window.monaco.editor.setModelLanguage(window.monaco_editor.getModel(), lang);
 }
 
 async function encodeContents(files) {
