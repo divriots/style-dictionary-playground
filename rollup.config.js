@@ -51,6 +51,7 @@ export default [
     output: {
       format: "es",
       file: "dist/index.js",
+      inlineDynamicImports: true,
     },
     plugins: [nodeResolve(), json()],
   },
