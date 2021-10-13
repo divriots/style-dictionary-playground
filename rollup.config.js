@@ -4,6 +4,12 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import * as path from "path";
 import * as fs from "fs";
 
+const filesToCopy = [
+  path.resolve("src", "index.html"),
+  path.resolve("src", "style.css"),
+  path.resolve("src", "assets"),
+];
+
 const plugins = [
   {
     name: "inline-fs",
@@ -23,25 +29,11 @@ const plugins = [
   {
     name: "watch-external",
     buildStart() {
-      this.addWatchFile(path.resolve("src", "index.html"));
-      this.addWatchFile(path.resolve("src", "style.css"));
+      filesToCopy.forEach((file) => this.addWatchFile(file));
     },
   },
   copy({
-    targets: [
-      {
-        src: path.resolve("src", "index.html"),
-        dest: "dist",
-      },
-      {
-        src: path.resolve("src", "style.css"),
-        dest: "dist",
-      },
-      {
-        src: path.resolve("src", "assets"),
-        dest: "dist",
-      },
-    ],
+    targets: [...filesToCopy.map((file) => ({ src: file, dest: "dist" }))],
   }),
 ];
 

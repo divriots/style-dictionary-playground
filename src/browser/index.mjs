@@ -1,2 +1,2 @@
-import "./monaco.js";
 import "./FileTree.js";
+import "./monaco.js";

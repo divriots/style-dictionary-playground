@@ -20,11 +20,10 @@
     "memfs": "^3.3.0",
     "monaco-editor": "^0.28.1",
     "pako": "^2.0.4",
-    "process": "^0.11.10",q
+    "process": "^0.11.10",
     "wasm-flate": "^1.0.2-browser"
   },
   "devDependencies": {
-    "@rollup/plugin-image": "^2.1.1",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.5",
     "@web/dev-server": "^0.1.23",
@@ -36,7 +35,6 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.57.0",
     "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-import-css": "^3.0.2",
     "style-loader": "^3.3.0",
     "watchify": "^4.0.0",
     "yargs": "^17.2.1"

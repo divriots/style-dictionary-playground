@@ -194,7 +194,7 @@ async function createInputFiles(configPath) {
           {
             source: ["tokens/**/*.json"],
             platforms: {
-              scss: {
+              css: {
                 transformGroup: "css",
                 prefix: "sd",
                 buildPath: "build/css/",
@@ -278,10 +278,28 @@ async function createInputFiles(configPath) {
   }
 }
 
-async function repopulateFileTree() {
+let currentSdConfig = {};
+async function repopulateFileTree(sdConfig) {
+  if (sdConfig) {
+    currentSdConfig = sdConfig;
+  }
   const files = await asyncGlob("**/*", { fs, mark: true });
   const fileTreeEl = document.querySelector("file-tree");
-  fileTreeEl.files = files;
+
+  const outputFolders = new Set();
+  Object.entries(currentSdConfig.platforms).forEach(([key, value]) => {
+    outputFolders.add(value.buildPath.split("/")[0]);
+  });
+  const inputFiles = files.filter((file) => {
+    return !Array.from(outputFolders).some((outputFolder) =>
+      file.startsWith(`${outputFolder}/`)
+    );
+  });
+
+  const outputFiles = files.filter((file) => !inputFiles.includes(file));
+
+  fileTreeEl.inputFiles = inputFiles;
+  fileTreeEl.outputFiles = outputFiles;
 }
 
 async function clearAll() {
