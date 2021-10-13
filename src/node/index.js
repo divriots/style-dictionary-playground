@@ -3,7 +3,6 @@ const fs = require("fs");
 const util = require("util");
 const glob = require("glob");
 const {
-  deleteLeftoverDB,
   createInputFiles,
   setupFileChangeHandlers,
   hooks,
@@ -18,7 +17,6 @@ let sd;
 
 (async function () {
   await createInputFiles(configPath);
-  await deleteLeftoverDB();
   sd = await runStyleDictionary(configPath);
   await initFileTree();
   await setupFileChangeHandlers();

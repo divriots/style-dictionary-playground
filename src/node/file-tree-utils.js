@@ -107,50 +107,6 @@ async function setupFileChangeHandlers() {
   });
 }
 
-/**
- * Makes sure only to keep the 5 most recent DB instances related to this playground.
- * This assumes people will not have more than 5 running playgrounds
- * simultaneously in the same browser.
- *
- * We used to run on a static db name, but that meant you could not have
- * multiple playgrounds open in the same browser. Now we prefix the db name
- * with a timestamp and a unique ID, but that could end up filling the user's
- * disk eventually with these playground dbs, which I don't want to do.
- */
-async function deleteLeftoverDB() {
-  const dbs = await indexedDB.databases();
-  dbs
-    .filter((db) => db.name.startsWith("IDBWrapper-level-filesystem-"))
-    .sort((a, b) => {
-      const timestampA = a.name.split("-")[3];
-      const timestampB = b.name.split("-")[3];
-      if (timestampA > timestampB) {
-        return -1;
-      }
-      if (timestampA < timestampB) {
-        return 1;
-      }
-      return 0;
-    })
-    .reverse();
-
-  // If we exceed max amount of level-DBs
-  // Take the oldest ones and delete
-
-  if (dbs.length > maxDbs) {
-    const amountToDelete = dbs.length - maxDbs;
-    const dbsToDelete = dbs.slice(0, amountToDelete);
-    await Promise.all(
-      dbsToDelete.map((db) => {
-        return new Promise(async (resolve) => {
-          await indexedDB.deleteDatabase(db.name);
-          resolve();
-        });
-      })
-    );
-  }
-}
-
 async function createInputFiles(configPath) {
   const urlSplit = window.location.href.split("#project=");
   if (urlSplit.length > 1) {
@@ -366,7 +322,6 @@ async function encodeContents(files) {
 module.exports = {
   hooks,
   setupFileChangeHandlers,
-  deleteLeftoverDB,
   createInputFiles,
   initFileTree,
   repopulateFileTree,
