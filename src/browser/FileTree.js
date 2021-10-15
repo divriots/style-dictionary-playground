@@ -438,6 +438,7 @@ class FileTree extends LitElement {
   }
 
   rowClick(ev) {
+    console.log("row click", ev.target, ev.key);
     let { target, key } = ev;
 
     if (key && key !== "Space" && key !== "Enter") {
@@ -445,8 +446,8 @@ class FileTree extends LitElement {
     }
 
     // get the "actual" target if the event originally came from the inner span
-    if (target.tagName === "SPAN") {
-      target = target.closest(".file, .folder-row");
+    if (!target.classList.contains(".row")) {
+      target = target.closest(".row");
     }
     this.lastSelectedElement = target;
     if (target.classList.contains("file")) {
