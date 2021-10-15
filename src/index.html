@@ -15,13 +15,42 @@
     />
     <script type="module" src="./index-node.js"></script>
   </head>
-  <body style="height: 750px">
-    <!-- hack to make monaco layout behave -->
-    <a class="logo-link" href="https://amzn.github.io/style-dictionary/#/"
-      ><img src="./assets/sd-logo.png"
-    /></a>
-    <h1>Style Dictionary Playground</h1>
-    <h2>Try out and experiment with style-dictionary in your browser!</h2>
+  <!-- hack to make monaco layout behave -->
+  <body>
+    <header>
+      <div class="logo-link-container">
+        <a class="logo-link" href="/" aria-label="Back to homepage">
+          <div>
+            <img
+              class="logo-link__img"
+              src="./assets/sd-logo.png"
+              alt="style-dictionary logo"
+            />
+            <div class="font-logo">
+              <span class="big">Style-Dictionary-Play</span
+              ><span class="small">.dev</span>
+            </div>
+          </div>
+        </a>
+        <a class="divriots-logo" href="https://divriots.com" target="_blank">
+          by
+          <img src="./assets/divriots-dark.svg" />
+        </a>
+      </div>
+    </header>
+    <div class="intro">
+      <h1>Play with Style Dictionary</h1>
+      <p>
+        Used in our Design System tool,
+        <a href="https://backlight.dev" target="_blank" rel="noopener"
+          >Backlight.dev</a
+        >
+      </p>
+      <p>
+        Once you save any file, the URL encodes your progress so it's easy to
+        share!
+      </p>
+    </div>
     <div class="playground-container">
       <file-tree></file-tree>
       <div style="height: 100%" id="monaco-container"></div>
@@ -48,6 +77,40 @@
         playground snippets easy to share with others!
       </p>
     </div>
+    <footer>
+      <div class="logo">
+        <a class="sd-logo" href="/" aria-label="Back to homepage">
+          <img src="./assets/sd-logo.png" alt="style-dictionary logo" />
+        </a>
+        <a class="divriots" href="https://divriots.com" target="_blank">
+          by
+          <img src="./assets/divriots.svg" />
+        </a>
+      </div>
+      <div class="connect">
+        <p>Connect</p>
+        <div class="socials">
+          <a href="https://discord.gg/XkQxSU9" aria-label="discord"
+            ><img src="./assets/discord.svg"
+          /></a>
+          <a href="https://twitter.com/backlight_dev" aria-label="twitter"
+            ><img src="./assets/twitter.svg"
+          /></a>
+          <a
+            href="https://www.youtube.com/channel/UCeBNmb3t0KEQpOYKy_TVAjA"
+            aria-label="youtube"
+            ><img src="./assets/youtube.svg"
+          /></a>
+          <a href="https://backlight.dev/rss.xml" aria-label="rss"
+            ><img src="./assets/rss.svg"
+          /></a>
+        </div>
+      </div>
+      <div class="contact">
+        <p>Contact</p>
+        <p>hello@backlight.dev</p>
+      </div>
+    </footer>
     <script type="module" src="./index.js"></script>
   </body>
 </html>
