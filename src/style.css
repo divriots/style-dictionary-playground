@@ -199,8 +199,8 @@ footer .sd-logo img {
 
 footer .divriots img {
   width: 75px;
-  margin-left: 0.25rem;
-  vertical-align: middle;
+  margin: 0.25rem auto;
+  display: block;
 }
 
 footer a,
