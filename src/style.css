@@ -30,6 +30,16 @@ body {
     linear-gradient(to right, #2e2e46, #158581);
 }
 
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.github img {
+  height: 30px;
+}
+
 @media (min-width: 601px) {
   body {
     padding: 0 1rem;
