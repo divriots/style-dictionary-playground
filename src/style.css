@@ -201,10 +201,13 @@ footer .sd-logo img {
   width: 75px;
 }
 
+.divriots {
+  margin-top: -10px;
+}
+
 footer .divriots img {
   width: 75px;
-  margin: 0.25rem auto;
-  display: block;
+  vertical-align: middle;
 }
 
 footer a,

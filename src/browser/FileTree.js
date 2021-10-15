@@ -367,6 +367,7 @@ class FileTree extends LitElement {
       iconDefinitions.icons.find((def) => def.fileExtensions?.includes(ext))
         ?.name || iconDefinitions.defaultIcon.name;
     return html`<img
+      alt="file icon"
       src="https://unpkg.com/material-icon-theme@3.7.1/icons/${icon}.svg"
     />`;
   }
@@ -438,7 +439,6 @@ class FileTree extends LitElement {
   }
 
   rowClick(ev) {
-    console.log("row click", ev.target, ev.key);
     let { target, key } = ev;
 
     if (key && key !== "Space" && key !== "Enter") {

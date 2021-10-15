@@ -6,6 +6,7 @@ import * as fs from "fs";
 
 const filesToCopy = [
   path.resolve("src", "index.html"),
+  path.resolve("src", "favicon.ico"),
   path.resolve("src", "style.css"),
   path.resolve("src", "assets"),
 ];
