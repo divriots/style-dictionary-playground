@@ -114,6 +114,10 @@ header {
   margin-bottom: 3rem;
 }
 
+.intro a {
+  color: #11aea7;
+}
+
 h1,
 .intro {
   text-align: center;
