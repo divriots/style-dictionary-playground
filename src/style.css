@@ -36,6 +36,20 @@ header {
   align-items: center;
 }
 
+.external-links {
+  display: flex;
+  align-items: center;
+}
+
+.external-links > * {
+  margin-left: 1rem;
+}
+
+.blog img {
+  display: block;
+  width: 30px;
+}
+
 .github img {
   height: 30px;
 }
@@ -56,6 +70,16 @@ header {
 
   :root {
     --border-radius-editor: 0px;
+  }
+}
+
+.logo-link-container {
+  font-size: 80%;
+}
+
+@media (min-width: 601px) {
+  .logo-link-container {
+    font-size: 100%;
   }
 }
 
