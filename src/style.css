@@ -99,7 +99,7 @@ header {
   gap: 0.25rem;
   position: relative;
   left: 40px;
-  top: -14px;
+  top: -8px;
   fill: #2e2e46;
   text-decoration: none;
 }
@@ -175,7 +175,7 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
   padding-bottom: 4rem;
 }
@@ -191,18 +191,13 @@ footer {
   }
 }
 
-footer .logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-footer .sd-logo img {
-  width: 75px;
+footer .divriots {
+  font-size: 1.25rem;
 }
 
 footer .divriots img {
-  width: 75px;
+  width: 125px;
+  margin-left: 0.5rem;
   vertical-align: middle;
 }
 
@@ -224,6 +219,7 @@ footer a:active {
 
 .connect p,
 .contact p {
+  margin-top: 0;
   color: white;
 }
 
@@ -242,5 +238,5 @@ footer a:active {
 }
 
 .contact p {
-  margin: 0.5rem;
+  margin-bottom: 0.5rem;
 }
