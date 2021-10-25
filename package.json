@@ -8,12 +8,12 @@
   "main": "index.js",
   "files": [],
   "scripts": {
-    "dev": "npm run build && concurrently \"node ./run-browserify.js --watch\" \"rollup -c rollup.config.js --watch\" \"wds --watch --root-dir dist\"",
-    "build": "rimraf dist && node ./run-browserify.js && rollup -c rollup.config.js",
+    "dev": "npm run build && concurrently \"rollup -c rollup.config.js --watch\" \"wds --watch --root-dir dist\"",
+    "build": "rimraf dist && rollup -c rollup.config.js",
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "browser-style-dictionary": "^3.0.2",
+    "browser-style-dictionary": "^3.0.2-browser.1",
     "buffer": "^6.0.3",
     "glob": "^7.2.0",
     "lit": "^2.0.0",
@@ -21,11 +21,15 @@
     "monaco-editor": "^0.28.1",
     "pako": "^2.0.4",
     "process": "^0.11.10",
+    "stream": "^0.0.2",
     "wasm-flate": "^1.0.2-browser"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-inject": "^4.0.3",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "@rollup/plugin-replace": "^3.0.0",
     "@web/dev-server": "^0.1.23",
     "browserify": "^17.0.0",
     "concurrently": "^6.2.2",
@@ -35,6 +39,7 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.57.0",
     "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-visualizer": "^5.5.2",
     "style-loader": "^3.3.0",
     "watchify": "^4.0.0",
     "yargs": "^17.2.1"
