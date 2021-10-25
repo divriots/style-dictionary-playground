@@ -113,20 +113,11 @@ export default [
     output: {
       format: "es",
       name: "__style_dictionary__",
-      file: "dist/index-node.js",
+      file: "dist/index.js",
       globals: {
         lodash: "_",
       },
     },
     plugins,
-  },
-  {
-    input: "src/browser/index.mjs",
-    output: {
-      format: "es",
-      file: "dist/index.js",
-      inlineDynamicImports: true,
-    },
-    plugins: [nodeResolve, json()],
   },
 ];

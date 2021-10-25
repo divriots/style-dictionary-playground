@@ -1,59 +1,48 @@
-const path = require("path");
-const fs = require("fs");
-const util = require("util");
-const glob = require("glob");
-const {
+import path from "path";
+import fs from "fs";
+import {
   createInputFiles,
   setupFileChangeHandlers,
-  hooks,
-  initFileTree,
-  encodeContents,
-} = require("./file-tree-utils.js");
-const runStyleDictionary = require("./run-style-dictionary.js");
-const asyncGlob = util.promisify(glob);
-const configPath = path.resolve("sd.config.json");
+  repopulateFileTree,
+} from "./file-tree-utils.js";
+import runStyleDictionary from "./run-style-dictionary.js";
+import { ensureMonacoIsLoaded, editor, monaco } from "../browser/monaco.js";
+import "../browser/index.js";
 
-let sd;
+export const configPath = path.resolve("sd.config.json");
+
+export async function changeLang(lang) {
+  await ensureMonacoIsLoaded();
+  monaco.editor.setModelLanguage(editor.getModel(), lang);
+}
+
+export async function encodeContents(files) {
+  const contents = {};
+  await Promise.all(
+    files.map(async (file) => {
+      await new Promise((resolve) => {
+        fs.readFile(file, "utf-8", (err, data) => {
+          contents[file] = JSON.stringify(JSON.parse(data));
+          resolve();
+        });
+      });
+    })
+  );
+  const content = JSON.stringify(contents);
+  return flate.deflate_encode(content);
+}
 
 (async function () {
-  await createInputFiles(configPath);
-  sd = await runStyleDictionary(configPath);
-  await initFileTree();
+  await createInputFiles();
+  await runStyleDictionary();
+  await repopulateFileTree();
   await setupFileChangeHandlers();
-  hooks.runStyleDictionary = () => runStyleDictionary(configPath);
-  hooks.onDidSave = async (file) => {
-    const { source } = sd.options;
-    const sourceFiles = new Set();
-    await Promise.all(
-      source.map(async (src) => {
-        const matches = await asyncGlob(src, { nodir: true, fs });
-        matches.forEach((m) => {
-          sourceFiles.add(`/${m}`);
-        });
-      })
-    );
-
-    const isSourceFile = Array.from(sourceFiles).includes(file);
-    const isConfigFile = file === configPath;
-
-    // Only run style dictionary if the config our source tokens were changed
-    if (!isSourceFile && !isConfigFile) {
-      return;
-    }
-
-    sd = await runStyleDictionary(configPath);
-    const encoded = await encodeContents([
-      configPath,
-      ...Array.from(sourceFiles),
-    ]);
-    window.location.href = `${window.location.origin}/#project=${encoded}`;
-  };
   window.addEventListener("resize", async () => {
-    await window.ensureMonacoIsLoaded();
-    window.monaco_editor.layout({});
-    window.monaco_editor.layout();
+    await ensureMonacoIsLoaded();
+    editor.layout({});
+    editor.layout();
   });
-  await window.ensureMonacoIsLoaded();
-  window.monaco_editor.layout({});
-  window.monaco_editor.layout();
+  await ensureMonacoIsLoaded();
+  editor.layout({});
+  editor.layout();
 })();

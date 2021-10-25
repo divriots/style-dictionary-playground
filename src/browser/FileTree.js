@@ -1,6 +1,18 @@
 import { LitElement, css, html } from "lit";
 import codicon from "./codicon.css.js";
 import iconDefinitions from "./iconDefinitions.js";
+import { ensureMonacoIsLoaded, editor } from "./monaco.js";
+import runStyleDictionary from "../node/run-style-dictionary.js";
+import {
+  clearAll,
+  switchToFile,
+  saveCurrentFile,
+  createFile,
+  createFolder,
+  removeFile,
+} from "../node/file-tree-utils.js";
+import { configPath } from "../node/index.js";
+
 class FileTree extends LitElement {
   static get properties() {
     return {
@@ -342,7 +354,7 @@ class FileTree extends LitElement {
         <div class="clear">
           <button
             title="Clear all files"
-            @click=${this.clearAll}
+            @click=${clearAll}
             class="codicon codicon-clear-all"
           ></button>
         </div>
@@ -354,9 +366,9 @@ class FileTree extends LitElement {
     // Need to wait for monaco to catch up to the fact that container size changed (potentially)
     // TODO: check if there's a lifecycle hook that we can use instead..
     setTimeout(async () => {
-      await window.ensureMonacoIsLoaded();
-      window.monaco_editor.layout({});
-      window.monaco_editor.layout();
+      await ensureMonacoIsLoaded();
+      editor.layout({});
+      editor.layout();
     }, 10);
   }
 
@@ -406,11 +418,7 @@ class FileTree extends LitElement {
   }
 
   play() {
-    this.dispatchEvent(new Event("run-style-dictionary"));
-  }
-
-  clearAll() {
-    this.dispatchEvent(new Event("clear-all"));
+    runStyleDictionary(configPath);
   }
 
   uncheckFolders() {
@@ -511,9 +519,11 @@ class FileTree extends LitElement {
       const fullPath = `${folder ? `${folder}/` : ""}${filename}`;
       const fullPathNormalized = `${fullPath}${type === "folder" ? "/" : ""}`;
       this.inputFiles = [...this.inputFiles, fullPathNormalized];
-      this.dispatchEvent(
-        new CustomEvent(`create-${type}`, { detail: fullPathNormalized })
-      );
+      if (type === "file") {
+        createFile(fullPathNormalized);
+      } else if (type === "folder") {
+        createFolder(fullPathNormalized);
+      }
       await this.updateComplete;
       const curr = [...this.folderButtons, ...this.fileButtons].find((btn) => {
         return btn.getAttribute("full-path") === fullPath;
@@ -526,12 +536,10 @@ class FileTree extends LitElement {
 
   async removeFileOrFolder() {
     const lastSelectedFile = this.lastSelectedElement.getAttribute("full-path");
-    this.dispatchEvent(
-      new CustomEvent("remove-file", {
-        detail: `${lastSelectedFile}${
-          this.lastSelectedElement.classList.contains("folder-row") ? "/" : ""
-        }`,
-      })
+    removeFile(
+      `${lastSelectedFile}${
+        this.lastSelectedElement.classList.contains("folder-row") ? "/" : ""
+      }`
     );
   }
 
@@ -539,9 +547,7 @@ class FileTree extends LitElement {
   async switchToFile(indexOrName) {
     await this.updateComplete;
     if (this.unsavedFileBtn) {
-      this.dispatchEvent(
-        new CustomEvent("save-current-file", { detail: this.unsavedFile })
-      );
+      saveCurrentFile();
     }
     if (this.checkedFileBtn) {
       this.checkedFileBtn.removeAttribute("checked");
@@ -566,11 +572,8 @@ class FileTree extends LitElement {
         parentFolder.setAttribute("checked", "");
       }
     }
-    this.dispatchEvent(
-      new CustomEvent("switch-file", {
-        detail: filename,
-      })
-    );
+
+    switchToFile(filename);
   }
 }
 customElements.define("file-tree", FileTree);

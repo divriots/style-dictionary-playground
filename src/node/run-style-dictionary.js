@@ -1,15 +1,19 @@
-const fs = require("fs");
-const { repopulateFileTree } = require("./file-tree-utils.js");
-const StyleDictionary = require("browser-style-dictionary/browser.js");
+import fs from "fs";
+import util from "util";
+import glob from "glob";
+import { repopulateFileTree } from "./file-tree-utils.js";
+import StyleDictionary from "browser-style-dictionary/browser.js";
+import { configPath, encodeContents } from "./index.js";
+const asyncGlob = util.promisify(glob);
 
-let oldStyleDictionary;
+export let styleDictionaryInstance;
 
 async function cleanPlatformOutputDirs() {
-  if (!oldStyleDictionary || !oldStyleDictionary.platforms) {
+  if (!styleDictionaryInstance || !styleDictionaryInstance.platforms) {
     return;
   }
   const foldersToClean = new Set();
-  Object.entries(oldStyleDictionary.platforms).map(([key, val]) => {
+  Object.entries(styleDictionaryInstance.platforms).map(([key, val]) => {
     foldersToClean.add(val.buildPath.split("/")[0]);
   });
 
@@ -24,12 +28,40 @@ async function cleanPlatformOutputDirs() {
   );
 }
 
-module.exports = async function (configPath) {
+export async function rerunStyleDictionaryIfSourceChanged(file) {
+  const { source } = styleDictionaryInstance.options;
+  const sourceFiles = new Set();
+  await Promise.all(
+    source.map(async (src) => {
+      const matches = await asyncGlob(src, { nodir: true, fs });
+      matches.forEach((m) => {
+        sourceFiles.add(`/${m}`);
+      });
+    })
+  );
+
+  const isSourceFile = Array.from(sourceFiles).includes(file);
+  const isConfigFile = file === configPath;
+
+  // Only run style dictionary if the config our source tokens were changed
+  if (!isSourceFile && !isConfigFile) {
+    return;
+  }
+
+  await runStyleDictionary(configPath);
+  const encoded = await encodeContents([
+    configPath,
+    ...Array.from(sourceFiles),
+  ]);
+  window.location.href = `${window.location.origin}/#project=${encoded}`;
+}
+
+export default async function runStyleDictionary() {
   console.log("Running style-dictionary...");
   await cleanPlatformOutputDirs();
   const newStyleDictionary = await StyleDictionary.extend(configPath);
   await newStyleDictionary.buildAllPlatforms();
-  await repopulateFileTree(newStyleDictionary);
-  oldStyleDictionary = newStyleDictionary;
+  styleDictionaryInstance = newStyleDictionary;
+  await repopulateFileTree();
   return newStyleDictionary;
-};
+}
