@@ -1,6 +1,9 @@
 let loaderPending = false;
 const loaderCallbacks = [];
 
+export let monaco;
+export let editor;
+
 function onAmdLoaderLoad() {
   let currentCallback = loaderCallbacks.shift();
   while (currentCallback) {
@@ -24,7 +27,7 @@ export function ensureMonacoIsLoaded(
   srcPath = "https://unpkg.com/monaco-editor@0.29.1/min"
 ) {
   return new Promise((resolve, reject) => {
-    if (window.monaco) {
+    if (monaco) {
       resolve();
       return;
     }
@@ -36,7 +39,7 @@ export function ensureMonacoIsLoaded(
     };
     const loaderUrl = `${config.paths.vs}/loader.js`;
 
-    const timeout = window.setTimeout(() => {
+    const timeout = setTimeout(() => {
       reject(new Error("Couldn't load monaco editor after 60s"));
     }, 60000);
 
@@ -80,14 +83,9 @@ export function ensureMonacoIsLoaded(
   });
 }
 
-window.ensureMonacoIsLoaded = ensureMonacoIsLoaded;
-
 ensureMonacoIsLoaded().then(() => {
-  const editor = window.monaco.editor.create(
-    document.getElementById("monaco-container"),
-    {
-      theme: "vs-dark",
-    }
-  );
-  window.monaco_editor = editor;
+  monaco = window.monaco;
+  editor = monaco.editor.create(document.getElementById("monaco-container"), {
+    theme: "vs-dark",
+  });
 });

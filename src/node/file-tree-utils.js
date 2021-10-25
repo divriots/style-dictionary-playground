@@ -1,66 +1,20 @@
-const fs = require("fs");
-const util = require("util");
-const path = require("path");
-const glob = require("glob");
-const mkdirRecursive = require("./mkdirRecursive.js");
+import fs from "fs";
+import util from "util";
+import path from "path";
+import glob from "glob";
+import { configPath, changeLang } from "./index.js";
+import {
+  styleDictionaryInstance,
+  rerunStyleDictionaryIfSourceChanged,
+} from "./run-style-dictionary.js";
+import mkdirRecursive from "./mkdirRecursive.js";
+import { ensureMonacoIsLoaded, editor } from "../browser/monaco.js";
+
 const asyncGlob = util.promisify(glob);
 const extensionMap = {
   js: "javascript",
 };
-const maxDbs = 5;
 const tokensPath = path.resolve("tokens");
-
-async function saveCurrentFile() {
-  const selectedFileBtn = getSelectedFileBtn();
-  if (!selectedFileBtn) {
-    return;
-  }
-  const selectedFile = selectedFileBtn.getAttribute("full-path");
-  if (!selectedFile) {
-    return;
-  }
-  await new Promise(async (resolve) => {
-    await window.ensureMonacoIsLoaded();
-    fs.writeFile(selectedFile, window.monaco_editor.getValue(), () => {
-      resolve();
-    });
-  });
-  selectedFileBtn.removeAttribute("unsaved");
-  hooks.onDidSave(`/${selectedFile}`);
-}
-
-async function createFile(filename) {
-  await new Promise((resolve) => {
-    fs.writeFile(filename, "", () => {
-      resolve();
-    });
-  });
-}
-
-async function createFolder(foldername) {
-  await new Promise((resolve) => {
-    fs.mkdir(foldername, (err) => {
-      resolve();
-    });
-  });
-}
-
-async function removeFile(ev) {
-  if (ev.detail.endsWith("/")) {
-    await new Promise((resolve) => {
-      fs.rmdir(ev.detail, { recursive: true }, () => {
-        resolve();
-      });
-    });
-  } else {
-    await new Promise((resolve) => {
-      fs.unlink(ev.detail, () => {
-        resolve();
-      });
-    });
-  }
-  await repopulateFileTree();
-}
 
 async function currentFileContentChanged() {
   const selectedFileBtn = getSelectedFileBtn();
@@ -74,40 +28,7 @@ function getSelectedFileBtn() {
   return fileTreeEl.checkedFileBtn;
 }
 
-async function switchToFile(file) {
-  const ext = path.extname(file).slice(1);
-  const lang = extensionMap[ext] || ext;
-  const fileData = await new Promise((resolve) => {
-    fs.readFile(file, "utf-8", (err, data) => {
-      resolve(data);
-    });
-  });
-  await window.ensureMonacoIsLoaded();
-  window.monaco_editor.setValue(fileData);
-  await changeLang(lang);
-  window.monaco_editor.setScrollTop(0);
-}
-
-const hooks = {};
-hooks.onDidSave = (file) => {};
-hooks.runStyleDictionary = () => {};
-
-async function setupFileChangeHandlers() {
-  await window.ensureMonacoIsLoaded();
-  window.monaco_editor.onDidChangeModelContent((ev) => {
-    if (!ev.isFlush) {
-      currentFileContentChanged();
-    }
-  });
-  window.monaco_editor._domElement.addEventListener("keydown", (ev) => {
-    if (ev.key === "s" && (ev.ctrlKey || ev.metaKey)) {
-      ev.preventDefault();
-      saveCurrentFile();
-    }
-  });
-}
-
-async function createInputFiles(configPath) {
+export async function createInputFiles() {
   const urlSplit = window.location.href.split("#project=");
   if (urlSplit.length > 1) {
     const encoded = urlSplit[1];
@@ -234,31 +155,40 @@ async function createInputFiles(configPath) {
   }
 }
 
-let currentSdConfig = {};
-async function repopulateFileTree(sdConfig) {
-  if (sdConfig) {
-    currentSdConfig = sdConfig;
-  }
-  const files = await asyncGlob("**/*", { fs, mark: true });
-  const fileTreeEl = document.querySelector("file-tree");
-
-  const outputFolders = new Set();
-  Object.entries(currentSdConfig.platforms).forEach(([key, value]) => {
-    outputFolders.add(value.buildPath.split("/")[0]);
+export async function createFile(filename) {
+  await new Promise((resolve) => {
+    fs.writeFile(filename, "", () => {
+      resolve();
+    });
   });
-  const inputFiles = files.filter((file) => {
-    return !Array.from(outputFolders).some((outputFolder) =>
-      file.startsWith(`${outputFolder}/`)
-    );
-  });
-
-  const outputFiles = files.filter((file) => !inputFiles.includes(file));
-
-  fileTreeEl.inputFiles = inputFiles;
-  fileTreeEl.outputFiles = outputFiles;
 }
 
-async function clearAll() {
+export async function createFolder(foldername) {
+  await new Promise((resolve) => {
+    fs.mkdir(foldername, (err) => {
+      resolve();
+    });
+  });
+}
+
+export async function removeFile(file) {
+  if (file.endsWith("/")) {
+    await new Promise((resolve) => {
+      fs.rmdir(file, { recursive: true }, () => {
+        resolve();
+      });
+    });
+  } else {
+    await new Promise((resolve) => {
+      fs.unlink(file, () => {
+        resolve();
+      });
+    });
+  }
+  await repopulateFileTree();
+}
+
+export async function clearAll() {
   const files = await asyncGlob("**/*", { fs, mark: true });
   const filtered = files.filter((file) => file !== "sd.config.json");
   await Promise.all(
@@ -284,47 +214,71 @@ async function clearAll() {
   await repopulateFileTree();
 }
 
-async function initFileTree() {
+export async function saveCurrentFile() {
+  const selectedFileBtn = getSelectedFileBtn();
+  if (!selectedFileBtn) {
+    return;
+  }
+  const selectedFile = selectedFileBtn.getAttribute("full-path");
+  if (!selectedFile) {
+    return;
+  }
+  await new Promise(async (resolve) => {
+    await ensureMonacoIsLoaded();
+    fs.writeFile(selectedFile, editor.getValue(), () => {
+      resolve();
+    });
+  });
+  selectedFileBtn.removeAttribute("unsaved");
+
+  await rerunStyleDictionaryIfSourceChanged(`/${selectedFile}`);
+}
+
+export async function switchToFile(file) {
+  const ext = path.extname(file).slice(1);
+  const lang = extensionMap[ext] || ext;
+  const fileData = await new Promise((resolve) => {
+    fs.readFile(file, "utf-8", (err, data) => {
+      resolve(data);
+    });
+  });
+  await ensureMonacoIsLoaded();
+  editor.setValue(fileData);
+  await changeLang(lang);
+  editor.setScrollTop(0);
+}
+
+export async function setupFileChangeHandlers() {
+  await ensureMonacoIsLoaded();
+  editor.onDidChangeModelContent((ev) => {
+    if (!ev.isFlush) {
+      currentFileContentChanged();
+    }
+  });
+  editor._domElement.addEventListener("keydown", (ev) => {
+    if (ev.key === "s" && (ev.ctrlKey || ev.metaKey)) {
+      ev.preventDefault();
+      saveCurrentFile();
+    }
+  });
+}
+
+export async function repopulateFileTree() {
+  const files = await asyncGlob("**/*", { fs, mark: true });
   const fileTreeEl = document.querySelector("file-tree");
-  fileTreeEl.addEventListener("run-style-dictionary", () =>
-    hooks.runStyleDictionary()
-  );
-  fileTreeEl.addEventListener("switch-file", (ev) => switchToFile(ev.detail));
-  fileTreeEl.addEventListener("save-current-file", saveCurrentFile);
-  fileTreeEl.addEventListener("create-file", (ev) => createFile(ev.detail));
-  fileTreeEl.addEventListener("create-folder", (ev) => createFolder(ev.detail));
-  fileTreeEl.addEventListener("remove-file", (ev) => removeFile(ev));
-  fileTreeEl.addEventListener("clear-all", clearAll);
-  await repopulateFileTree();
-}
 
-async function changeLang(lang) {
-  await window.ensureMonacoIsLoaded();
-  window.monaco.editor.setModelLanguage(window.monaco_editor.getModel(), lang);
-}
+  const outputFolders = new Set();
+  Object.entries(styleDictionaryInstance.platforms).forEach(([key, value]) => {
+    outputFolders.add(value.buildPath.split("/")[0]);
+  });
+  const inputFiles = files.filter((file) => {
+    return !Array.from(outputFolders).some((outputFolder) =>
+      file.startsWith(`${outputFolder}/`)
+    );
+  });
 
-async function encodeContents(files) {
-  const contents = {};
-  await Promise.all(
-    files.map(async (file) => {
-      await new Promise((resolve) => {
-        fs.readFile(file, "utf-8", (err, data) => {
-          contents[file] = JSON.stringify(JSON.parse(data));
-          resolve();
-        });
-      });
-    })
-  );
-  const content = JSON.stringify(contents);
-  return flate.deflate_encode(content);
-}
+  const outputFiles = files.filter((file) => !inputFiles.includes(file));
 
-module.exports = {
-  hooks,
-  setupFileChangeHandlers,
-  createInputFiles,
-  initFileTree,
-  repopulateFileTree,
-  changeLang,
-  encodeContents,
-};
+  fileTreeEl.inputFiles = inputFiles;
+  fileTreeEl.outputFiles = outputFiles;
+}

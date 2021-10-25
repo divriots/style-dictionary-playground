@@ -1,7 +1,7 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
-module.exports = async function mkdirRecursive(pathToCreate) {
+export default async function mkdirRecursive(pathToCreate) {
   await pathToCreate.split(path.sep).reduce(async (prevPath, folder) => {
     const resolvedPrevPath = await prevPath;
     const currentPath = path.join(resolvedPrevPath, folder, path.sep);
@@ -19,4 +19,4 @@ module.exports = async function mkdirRecursive(pathToCreate) {
     }
     return currentPath;
   }, "");
-};
+}
