@@ -30,14 +30,8 @@ body {
     linear-gradient(to right, #2e2e46, #158581);
 }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.github img {
-  height: 30px;
+sdp-nav {
+  width: 100%;
 }
 
 @media (min-width: 601px) {
@@ -57,57 +51,6 @@ header {
   :root {
     --border-radius-editor: 0px;
   }
-}
-
-.logo-link-container a,
-.logo-link-container a:link,
-.logo-link-container a:visited,
-.logo-link-container a:focus,
-.logo-link-container a:hover,
-.logo-link-container a:active {
-  color: #2e2e46;
-}
-
-.logo-link {
-  display: block;
-  text-decoration: none;
-  margin-bottom: 0;
-}
-
-.logo-link > div {
-  display: flex;
-  align-items: center;
-}
-
-.logo-link__img {
-  width: 2rem;
-  margin-right: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.font-logo .big {
-  font-size: 130%;
-}
-
-.font-logo .small {
-  font-size: 70%;
-}
-
-.divriots-logo {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.25rem;
-  position: relative;
-  left: 40px;
-  top: -8px;
-  fill: #2e2e46;
-  text-decoration: none;
-}
-
-.divriots-logo img {
-  height: 0.875rem;
-  display: inline;
-  margin-bottom: 1px;
 }
 
 .intro {
@@ -169,6 +112,10 @@ file-tree {
 
 .explainer a {
   color: #d9f8f5;
+}
+
+.made-for {
+  margin-top: 3em;
 }
 
 footer {

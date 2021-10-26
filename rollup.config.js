@@ -90,6 +90,7 @@ export default [
     input: "src/node/index.js",
     output: {
       format: "es",
+      inlineDynamicImports: true,
       file: "dist/index.js",
       globals: {
         lodash: "_",
