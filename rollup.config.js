@@ -1,7 +1,6 @@
 import copy from "rollup-plugin-copy";
 import json from "@rollup/plugin-json";
 import resolve from "@rollup/plugin-node-resolve";
-import replace from "@rollup/plugin-replace";
 import commonjs from "@rollup/plugin-commonjs";
 import inject from "@rollup/plugin-inject";
 import * as path from "path";
@@ -27,32 +26,20 @@ const BROWSERIFY_ALIASES = {
   util: "util",
 };
 
-const aliases = {
-  json5: EMPTY_MODULE_ID,
-  "json5/lib/register": EMPTY_MODULE_ID,
-};
-
 const nodeResolve = resolve({
   preferBuiltins: false,
   mainFields: ["module", "jsnext:main", "browser"],
-  dedupe: ["postcss"],
 });
 
 const plugins = [
-  commonjs({
-    transformMixedEsModules: true,
-    requireReturnsDefault: "auto",
-  }),
+  commonjs(),
   {
+    name: "browserify",
     resolveId(source, importer) {
       if (source in BROWSERIFY_ALIASES) {
         if (BROWSERIFY_ALIASES[source] === EMPTY_MODULE_ID)
           return EMPTY_MODULE_ID;
         return nodeResolve.resolveId(BROWSERIFY_ALIASES[source], undefined);
-      }
-      if (source in aliases) {
-        if (aliases[source] === EMPTY_MODULE_ID) return EMPTY_MODULE_ID;
-        return nodeResolve.resolveId(aliases[source], importer);
       }
       if (source === EMPTY_MODULE_ID) return EMPTY_MODULE_ID;
     },
@@ -60,15 +47,6 @@ const plugins = [
       if (id === EMPTY_MODULE_ID) return EMPTY_MODULE;
     },
   },
-  replace({
-    preventAssignment: true,
-    values: {
-      "process.env.NODE_DEBUG": false,
-      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
-      "process.platform": JSON.stringify("linux"),
-      "process.env.LANG": JSON.stringify("en"),
-    },
-  }),
   inject({
     process: "process",
   }),
@@ -112,7 +90,6 @@ export default [
     input: "src/node/index.js",
     output: {
       format: "es",
-      name: "__style_dictionary__",
       file: "dist/index.js",
       globals: {
         lodash: "_",
