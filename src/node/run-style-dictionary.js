@@ -43,10 +43,10 @@ export async function rerunStyleDictionaryIfSourceChanged(file) {
 
   // Send to analytics that user ran style dictionary, with how many source files (default 3)
   // to get a feeling of how much they are testing out
-  // mixpanel.track("Run Dictionary", {
-  //   sourceFiles: sourceFiles.size,
-  //   platforms: Object.keys(styleDictionaryInstance.platforms),
-  // });
+  mixpanel.track("Run Dictionary", {
+    sourceFiles: sourceFiles.size,
+    platforms: styleDictionaryInstance.platforms,
+  });
 
   const isSourceFile = Array.from(sourceFiles).includes(file);
   const isConfigFile = file === configPath;
