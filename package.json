@@ -13,11 +13,14 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@lion/core": "^0.18.4",
+    "@lion/overlays": "^0.26.1",
     "browser-style-dictionary": "^3.0.2-browser.1",
     "buffer": "^6.0.3",
     "glob": "^7.2.0",
     "lit": "^2.0.0",
     "memfs": "^3.3.0",
+    "mixpanel-browser": "^2.41.0",
     "monaco-editor": "^0.28.1",
     "pako": "^2.0.4",
     "process": "^0.11.10",

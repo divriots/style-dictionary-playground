@@ -1,8 +1,9 @@
 import fs from "fs";
 import util from "util";
 import glob from "glob";
-import { repopulateFileTree } from "./file-tree-utils.js";
 import StyleDictionary from "browser-style-dictionary/browser.js";
+import mixpanel from "mixpanel-browser";
+import { repopulateFileTree } from "./file-tree-utils.js";
 import { configPath, encodeContents } from "./index.js";
 const asyncGlob = util.promisify(glob);
 
@@ -39,6 +40,13 @@ export async function rerunStyleDictionaryIfSourceChanged(file) {
       });
     })
   );
+
+  // Send to analytics that user ran style dictionary, with how many source files (default 3)
+  // to get a feeling of how much they are testing out
+  mixpanel.track("Run Dictionary", {
+    sourceFiles: sourceFiles.size,
+    platforms: styleDictionaryInstance.platforms,
+  });
 
   const isSourceFile = Array.from(sourceFiles).includes(file);
   const isConfigFile = file === configPath;

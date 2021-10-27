@@ -61,42 +61,82 @@
       rel="stylesheet"
     />
     <script type="module" src="./index.js"></script>
+    <script>
+      // https://developer.mixpanel.com/docs/javascript-quickstart
+      (function (f, b) {
+        if (!b.__SV) {
+          var e, g, i, h;
+          window.mixpanel = b;
+          b._i = [];
+          b.init = function (e, f, c) {
+            function g(a, d) {
+              var b = d.split(".");
+              2 == b.length && ((a = a[b[0]]), (d = b[1]));
+              a[d] = function () {
+                a.push([d].concat(Array.prototype.slice.call(arguments, 0)));
+              };
+            }
+            var a = b;
+            "undefined" !== typeof c ? (a = b[c] = []) : (c = "mixpanel");
+            a.people = a.people || [];
+            a.toString = function (a) {
+              var d = "mixpanel";
+              "mixpanel" !== c && (d += "." + c);
+              a || (d += " (stub)");
+              return d;
+            };
+            a.people.toString = function () {
+              return a.toString(1) + ".people (stub)";
+            };
+            i =
+              "disable time_event track track_pageview track_links track_forms track_with_groups add_group set_group remove_group register register_once alias unregister identify name_tag set_config reset opt_in_tracking opt_out_tracking has_opted_in_tracking has_opted_out_tracking clear_opt_in_out_tracking start_batch_senders people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user people.remove".split(
+                " "
+              );
+            for (h = 0; h < i.length; h++) g(a, i[h]);
+            var j = "set set_once union unset remove delete".split(" ");
+            a.get_group = function () {
+              function b(c) {
+                d[c] = function () {
+                  call2_args = arguments;
+                  call2 = [c].concat(Array.prototype.slice.call(call2_args, 0));
+                  a.push([e, call2]);
+                };
+              }
+              for (
+                var d = {},
+                  e = ["get_group"].concat(
+                    Array.prototype.slice.call(arguments, 0)
+                  ),
+                  c = 0;
+                c < j.length;
+                c++
+              )
+                b(j[c]);
+              return d;
+            };
+            b._i.push([e, f, c]);
+          };
+          b.__SV = 1.2;
+          e = f.createElement("script");
+          e.type = "text/javascript";
+          e.async = !0;
+          e.src =
+            "undefined" !== typeof MIXPANEL_CUSTOM_LIB_URL
+              ? MIXPANEL_CUSTOM_LIB_URL
+              : "file:" === f.location.protocol &&
+                "//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)
+              ? "https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js"
+              : "//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";
+          g = f.getElementsByTagName("script")[0];
+          g.parentNode.insertBefore(e, g);
+        }
+      })(document, window.mixpanel || []);
+    </script>
   </head>
   <!-- hack to make monaco layout behave -->
   <body>
     <header>
-      <div class="logo-link-container">
-        <a class="logo-link" href="/" aria-label="Back to homepage">
-          <div>
-            <img
-              class="logo-link__img"
-              src="./assets/play-logo.png"
-              alt="style-dictionary logo"
-            />
-            <div class="font-logo">
-              <span class="big">Style-Dictionary-Play</span
-              ><span class="small">.dev</span>
-            </div>
-          </div>
-        </a>
-        <a
-          class="divriots-logo"
-          href="https://divriots.com"
-          target="_blank"
-          rel="noopener"
-        >
-          by
-          <img alt="divriots logo" src="./assets/divriots-dark.svg" />
-        </a>
-      </div>
-      <a
-        class="github"
-        aria-label="github"
-        href="https://github.com/divriots/style-dictionary-playground"
-        rel="noopener"
-        target="_blank"
-        ><img alt="github" src="./assets/github.svg"
-      /></a>
+      <sdp-nav></sdp-nav>
     </header>
     <div class="intro">
       <h1>
@@ -109,12 +149,6 @@
         >
       </h1>
       <p>
-        Soon to be supported in our Design System tool,
-        <a href="https://backlight.dev" target="_blank" rel="noopener"
-          >Backlight.dev</a
-        >
-      </p>
-      <p>
         Once you save any file, the URL encodes your progress so it's easy to
         share!
       </p>
@@ -125,6 +159,15 @@
     </div>
     <div class="explainer">
       <h2>How it works</h2>
+      <p>
+        For a full explanation,
+        <a
+          href="https://backlight.dev/blog/nodejs-in-browser"
+          target="_blank"
+          rel="noopener"
+          >check out the blog we wrote about it</a
+        >.
+      </p>
       <p>
         We use a
         <a
@@ -155,6 +198,12 @@
         The input files are encoded in the URL when you save files, making
         playground snippets easy to share with others!
       </p>
+      <p class="made-for">
+        Made for our Design System platform:
+        <a href="https://backlight.dev" target="_blank" rel="noopener"
+          >Backlight.dev</a
+        >
+      </p>
     </div>
     <footer>
       <a
@@ -179,15 +228,15 @@
           <a
             target="_blank"
             rel="noopener"
-            href="https://twitter.com/backlight_dev"
-            aria-label="twitter"
+            href="https://twitter.com/divriots"
+            aria-label="div riots twitter"
             ><img alt="twitter logo" src="./assets/twitter.svg"
           /></a>
         </div>
       </div>
       <div class="contact">
         <p>Contact</p>
-        <p>hello@backlight.dev</p>
+        <p>hello@divriots.com</p>
       </div>
     </footer>
   </body>
