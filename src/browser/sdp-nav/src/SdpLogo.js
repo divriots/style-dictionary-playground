@@ -37,7 +37,7 @@ export class SdpLogo extends LitElement {
       }
 
       .divriots-logo {
-        display: flex;
+        display: inline-flex;
         align-items: flex-end;
         gap: 0.25rem;
         position: relative;
