@@ -18,9 +18,7 @@ export class SdpExternalLinks extends LitElement {
         gap: 2rem;
       }
 
-      .how,
-      .github,
-      .discord {
+      .link {
         display: none;
       }
 
@@ -54,9 +52,7 @@ export class SdpExternalLinks extends LitElement {
           display: none;
         }
 
-        .how,
-        .github,
-        .discord {
+        .link {
           display: block;
         }
       }
@@ -68,9 +64,10 @@ export class SdpExternalLinks extends LitElement {
         background-color: rgb(217, 248, 245);
       }
 
-      :host([drawer]) > * {
+      :host([drawer]) .link {
         display: block;
       }
+
       :host([drawer]) .hamburger {
         display: none;
       }
@@ -92,14 +89,14 @@ export class SdpExternalLinks extends LitElement {
     return html`
       ${this.drawer ? html` <sdp-logo></sdp-logo> ` : ""}
       <a
-        class="how"
+        class="link how"
         href="https://backlight.dev/blog/nodejs-in-browser"
         target="_blank"
         rel="noopener"
         >How it works</a
       >
       <a
-        class="discord"
+        class="link discord"
         aria-label="discord"
         href="https://discord.gg/XkQxSU9"
         rel="noopener"
@@ -107,7 +104,7 @@ export class SdpExternalLinks extends LitElement {
         ><img alt="discord" src="./assets/discord-dark.svg"
       /></a>
       <a
-        class="github"
+        class="link github"
         aria-label="github"
         href="https://github.com/divriots/style-dictionary-playground"
         rel="noopener"
