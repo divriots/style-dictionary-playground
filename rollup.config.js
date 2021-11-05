@@ -53,21 +53,6 @@ const plugins = [
   nodeResolve,
   json(),
   {
-    name: "inline-fs",
-    transform(code, id) {
-      return code.replace(
-        /fs.readFileSync\(\s*__dirname\s*\+\s*'\/templates\/(.*)'\)/g,
-        (match, $1) => {
-          const tpl = path.join(
-            "./node_modules/browser-style-dictionary/lib/common/templates",
-            $1
-          );
-          return JSON.stringify(fs.readFileSync(tpl, "utf8"));
-        }
-      );
-    },
-  },
-  {
     name: "watch-external",
     buildStart() {
       filesToCopy.forEach((file) => this.addWatchFile(file));
