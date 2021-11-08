@@ -4,7 +4,7 @@ import {
   createInputFiles,
   setupFileChangeHandlers,
   repopulateFileTree,
-  switchToFile,
+  dispatchTokens,
 } from "./file-tree-utils.js";
 import runStyleDictionary, {
   findUsedConfigPath,
@@ -58,6 +58,7 @@ async function switchToJS() {
 }
 
 (async function () {
+  window.addEventListener("sd-tokens-request", dispatchTokens);
   await createInputFiles();
   await runStyleDictionary();
   await repopulateFileTree();
