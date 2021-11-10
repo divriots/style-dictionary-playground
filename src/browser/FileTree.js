@@ -11,7 +11,6 @@ import {
   createFolder,
   removeFile,
 } from "../node/file-tree-utils.js";
-import { configPath } from "../node/index.js";
 
 class FileTree extends LitElement {
   static get properties() {
@@ -418,7 +417,7 @@ class FileTree extends LitElement {
   }
 
   play() {
-    runStyleDictionary(configPath);
+    runStyleDictionary();
   }
 
   uncheckFolders() {

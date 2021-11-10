@@ -2,7 +2,7 @@ import fs from "fs";
 import util from "util";
 import path from "path";
 import glob from "glob";
-import { configPath, changeLang } from "./index.js";
+import { configPaths, changeLang } from "./index.js";
 import {
   styleDictionaryInstance,
   rerunStyleDictionaryIfSourceChanged,
@@ -66,7 +66,8 @@ export async function createInputFiles() {
     // Create SD config
     await new Promise((resolve) => {
       fs.writeFile(
-        configPath,
+        // take the config.json by default
+        configPaths[2],
         JSON.stringify(
           {
             source: ["tokens/**/*.json"],

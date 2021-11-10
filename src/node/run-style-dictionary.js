@@ -4,7 +4,7 @@ import glob from "glob";
 import StyleDictionary from "browser-style-dictionary/browser.js";
 import mixpanel from "mixpanel-browser";
 import { repopulateFileTree } from "./file-tree-utils.js";
-import { configPath, encodeContents } from "./index.js";
+import { configPaths, encodeContents } from "./index.js";
 const asyncGlob = util.promisify(glob);
 
 export let styleDictionaryInstance;
@@ -49,24 +49,26 @@ export async function rerunStyleDictionaryIfSourceChanged(file) {
   });
 
   const isSourceFile = Array.from(sourceFiles).includes(file);
-  const isConfigFile = file === configPath;
+  const isConfigFile = configPaths.includes(file);
 
   // Only run style dictionary if the config our source tokens were changed
   if (!isSourceFile && !isConfigFile) {
     return;
   }
 
-  await runStyleDictionary(configPath);
-  const encoded = await encodeContents([
-    configPath,
-    ...Array.from(sourceFiles),
-  ]);
+  await runStyleDictionary();
+  const encoded = await encodeContents([...Array.from(sourceFiles)]);
   window.location.href = `${window.location.origin}/#project=${encoded}`;
+}
+
+export function findUsedConfigPath() {
+  return configPaths.find((cfgPath) => fs.existsSync(cfgPath));
 }
 
 export default async function runStyleDictionary() {
   console.log("Running style-dictionary...");
   await cleanPlatformOutputDirs();
+  const configPath = findUsedConfigPath();
   const newStyleDictionary = await StyleDictionary.extend(configPath);
   await newStyleDictionary.buildAllPlatforms();
   styleDictionaryInstance = newStyleDictionary;

@@ -5,11 +5,19 @@ import {
   setupFileChangeHandlers,
   repopulateFileTree,
 } from "./file-tree-utils.js";
-import runStyleDictionary from "./run-style-dictionary.js";
+import runStyleDictionary, {
+  findUsedConfigPath,
+} from "./run-style-dictionary.js";
 import { ensureMonacoIsLoaded, editor, monaco } from "../browser/monaco.js";
 import "../browser/index.js";
 
-export const configPath = path.resolve("sd.config.json");
+// supported config paths, prioritized in this order
+export const configPaths = [
+  "config.js",
+  "sd.config.js",
+  "config.json",
+  "sd.config.json",
+].map((p) => path.resolve(p));
 
 export async function changeLang(lang) {
   await ensureMonacoIsLoaded();
@@ -17,6 +25,8 @@ export async function changeLang(lang) {
 }
 
 export async function encodeContents(files) {
+  const configPath = findUsedConfigPath();
+  files = [configPath, ...files];
   const contents = {};
   await Promise.all(
     files.map(async (file) => {
