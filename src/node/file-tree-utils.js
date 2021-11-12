@@ -41,13 +41,9 @@ export async function createInputFiles() {
           if (dir !== "/") {
             await mkdirRecursive(dir);
           }
-          fs.writeFile(
-            file,
-            JSON.stringify(JSON.parse(content), null, 2),
-            (err) => {
-              resolve();
-            }
-          );
+          fs.writeFile(file, content, (err) => {
+            resolve();
+          });
         });
       })
     );

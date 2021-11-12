@@ -4,6 +4,7 @@ import {
   createInputFiles,
   setupFileChangeHandlers,
   repopulateFileTree,
+  switchToFile,
 } from "./file-tree-utils.js";
 import runStyleDictionary, {
   findUsedConfigPath,
@@ -42,6 +43,20 @@ export async function encodeContents(files) {
   return flate.deflate_encode(content);
 }
 
+async function switchToJS() {
+  const configPath = findUsedConfigPath();
+  if (configPath.endsWith(".json")) {
+    const contents = fs.readFileSync(configPath, "utf-8");
+    const newPath = `${configPath.split(".json")[0]}.js`;
+    const newContents = `export default ${contents};`;
+    fs.unlinkSync(configPath);
+    fs.writeFileSync(newPath, newContents, "utf-8");
+    await runStyleDictionary();
+    await repopulateFileTree();
+    await document.querySelector("file-tree").switchToFile(newPath);
+  }
+}
+
 (async function () {
   await createInputFiles();
   await runStyleDictionary();
@@ -52,6 +67,7 @@ export async function encodeContents(files) {
     editor.layout({});
     editor.layout();
   });
+  document.getElementById("jsSwitchBtn").addEventListener("click", switchToJS);
   await ensureMonacoIsLoaded();
   editor.layout({});
   editor.layout();
