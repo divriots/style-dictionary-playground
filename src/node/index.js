@@ -32,7 +32,7 @@ export async function encodeContents(files) {
     files.map(async (file) => {
       await new Promise((resolve) => {
         fs.readFile(file, "utf-8", (err, data) => {
-          contents[file] = JSON.stringify(JSON.parse(data));
+          contents[file] = data;
           resolve();
         });
       });

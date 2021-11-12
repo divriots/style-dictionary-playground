@@ -68,8 +68,23 @@ export function findUsedConfigPath() {
 export default async function runStyleDictionary() {
   console.log("Running style-dictionary...");
   await cleanPlatformOutputDirs();
+  let newStyleDictionary;
   const configPath = findUsedConfigPath();
-  const newStyleDictionary = await StyleDictionary.extend(configPath);
+
+  // If .js, we need to parse it as actual JS without resorting to eval/Function
+  // Instead, we put it in a blob and create a URL from it that we can import
+  // That way, malicious code would be scoped only to the blob, which is safer.
+  if (configPath.endsWith(".js")) {
+    const stringJS = fs.readFileSync(configPath, "utf-8");
+    const url = URL.createObjectURL(
+      new Blob([stringJS], { type: "text/javascript" })
+    );
+    const configMod = await import(url);
+    const configObj = configMod.default;
+    newStyleDictionary = await StyleDictionary.extend(configObj);
+  } else {
+    newStyleDictionary = await StyleDictionary.extend(configPath);
+  }
   await newStyleDictionary.buildAllPlatforms();
   styleDictionaryInstance = newStyleDictionary;
   await repopulateFileTree();
