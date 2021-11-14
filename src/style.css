@@ -76,6 +76,21 @@ h1 {
   margin: 0.5rem 0;
 }
 
+.js-switch-btn {
+  background-color: #82dbd2;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  border-radius: 4px;
+  margin: 0 auto 1rem auto;
+  display: block;
+}
+
+.js-switch-btn:hover {
+  cursor: pointer;
+  background-color: #5bb8ae;
+}
+
 .playground-container {
   height: 75vh;
   display: flex;

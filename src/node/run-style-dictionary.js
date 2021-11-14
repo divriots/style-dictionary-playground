@@ -4,7 +4,7 @@ import glob from "glob";
 import StyleDictionary from "browser-style-dictionary/browser.js";
 import mixpanel from "mixpanel-browser";
 import { repopulateFileTree } from "./file-tree-utils.js";
-import { configPath, encodeContents } from "./index.js";
+import { configPaths, encodeContents } from "./index.js";
 const asyncGlob = util.promisify(glob);
 
 export let styleDictionaryInstance;
@@ -49,25 +49,42 @@ export async function rerunStyleDictionaryIfSourceChanged(file) {
   });
 
   const isSourceFile = Array.from(sourceFiles).includes(file);
-  const isConfigFile = file === configPath;
+  const isConfigFile = configPaths.includes(file);
 
   // Only run style dictionary if the config our source tokens were changed
   if (!isSourceFile && !isConfigFile) {
     return;
   }
 
-  await runStyleDictionary(configPath);
-  const encoded = await encodeContents([
-    configPath,
-    ...Array.from(sourceFiles),
-  ]);
+  await runStyleDictionary();
+  const encoded = await encodeContents([...Array.from(sourceFiles)]);
   window.location.href = `${window.location.origin}/#project=${encoded}`;
+}
+
+export function findUsedConfigPath() {
+  return configPaths.find((cfgPath) => fs.existsSync(cfgPath));
 }
 
 export default async function runStyleDictionary() {
   console.log("Running style-dictionary...");
   await cleanPlatformOutputDirs();
-  const newStyleDictionary = await StyleDictionary.extend(configPath);
+  let newStyleDictionary;
+  const configPath = findUsedConfigPath();
+
+  // If .js, we need to parse it as actual JS without resorting to eval/Function
+  // Instead, we put it in a blob and create a URL from it that we can import
+  // That way, malicious code would be scoped only to the blob, which is safer.
+  if (configPath.endsWith(".js")) {
+    const stringJS = fs.readFileSync(configPath, "utf-8");
+    const url = URL.createObjectURL(
+      new Blob([stringJS], { type: "text/javascript" })
+    );
+    const configMod = await import(url);
+    const configObj = configMod.default;
+    newStyleDictionary = await StyleDictionary.extend(configObj);
+  } else {
+    newStyleDictionary = await StyleDictionary.extend(configPath);
+  }
   await newStyleDictionary.buildAllPlatforms();
   styleDictionaryInstance = newStyleDictionary;
   await repopulateFileTree();

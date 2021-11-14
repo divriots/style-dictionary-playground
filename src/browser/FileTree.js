@@ -11,7 +11,6 @@ import {
   createFolder,
   removeFile,
 } from "../node/file-tree-utils.js";
-import { configPath } from "../node/index.js";
 
 class FileTree extends LitElement {
   static get properties() {
@@ -418,7 +417,7 @@ class FileTree extends LitElement {
   }
 
   play() {
-    runStyleDictionary(configPath);
+    runStyleDictionary();
   }
 
   uncheckFolders() {
@@ -543,12 +542,16 @@ class FileTree extends LitElement {
     );
   }
 
-  // TODO: clean this up, bit messy..
   async switchToFile(indexOrName) {
     await this.updateComplete;
     if (this.unsavedFileBtn) {
       saveCurrentFile();
     }
+    const filename = this.switchToFileInTree(indexOrName);
+    switchToFile(filename);
+  }
+
+  switchToFileInTree(indexOrName) {
     if (this.checkedFileBtn) {
       this.checkedFileBtn.removeAttribute("checked");
       this.uncheckFolders();
@@ -562,7 +565,8 @@ class FileTree extends LitElement {
     } else if (typeof indexOrName === "string") {
       filename = indexOrName;
       btn = this.fileButtons.find(
-        (btn) => btn.getAttribute("full-path") === indexOrName
+        (btn) =>
+          btn.getAttribute("full-path") === indexOrName.replace(/^\//, "")
       );
     }
     if (btn) {
@@ -572,8 +576,7 @@ class FileTree extends LitElement {
         parentFolder.setAttribute("checked", "");
       }
     }
-
-    switchToFile(filename);
+    return filename;
   }
 }
 customElements.define("file-tree", FileTree);
