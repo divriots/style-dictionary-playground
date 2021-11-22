@@ -113,7 +113,7 @@ class FileTree extends LitElement {
           justify-content: flex-end;
           position: sticky;
           top: 0;
-          margin-bottom: 8px;
+          margin-bottom: 2px;
           background-color: #171717;
           border-top-left-radius: var(--border-radius-editor);
         }
@@ -134,6 +134,37 @@ class FileTree extends LitElement {
 
         .codicon-play {
           flex-grow: 1;
+        }
+
+        .loading-cue {
+          position: relative;
+          height: 3px;
+          margin-bottom: 6px;
+          background-color: #f8c30730;
+          overflow: hidden;
+        }
+
+        .loading-cue-overlay {
+          position: absolute;
+          height: 3px;
+          width: 50px;
+          left: -50px;
+          background-color: #f8c307;
+        }
+
+        .loading-cue-overlay--slide {
+          animation: slidethrough 500ms ease-in;
+        }
+
+        @keyframes slidethrough {
+          from {
+            left: -50px;
+            width: 50px;
+          }
+          to {
+            left: 100%;
+            width: 500px;
+          }
         }
 
         #file-list {
@@ -343,6 +374,9 @@ class FileTree extends LitElement {
             class="codicon codicon-trash"
           ></button>
         </div>
+        <div class="loading-cue">
+          <div class="loading-cue-overlay"></div>
+        </div>
         <div class="input-files">
           ${this.asDetails(this.filesAsTree(this.inputFiles))}
         </div>
@@ -484,7 +518,13 @@ class FileTree extends LitElement {
       : this.checkedFolderEl.getAttribute("full-path") || "";
 
     const input = document.createElement("input");
-    parentFolder.appendChild(input);
+    if (parentFolder.id === "file-list") {
+      const outputFiles = parentFolder.querySelector(".output-files");
+      outputFiles.insertAdjacentElement("beforebegin", input);
+    } else {
+      parentFolder.appendChild(input);
+    }
+
     input.closest("details")?.setAttribute("open", "");
     input.addEventListener("blur", (ev) => {
       if (ev.target.isConnected) {
@@ -527,19 +567,31 @@ class FileTree extends LitElement {
       const curr = [...this.folderButtons, ...this.fileButtons].find((btn) => {
         return btn.getAttribute("full-path") === fullPath;
       });
+
       if (curr) {
         curr.click();
+        curr.setAttribute("checked", true);
+        this.focusInRoot = false;
       }
     } catch (e) {}
   }
 
   async removeFileOrFolder() {
     const lastSelectedFile = this.lastSelectedElement.getAttribute("full-path");
-    removeFile(
+    const openedDetails = Array.from(
+      this.shadowRoot.querySelectorAll("details[open]")
+    );
+    await removeFile(
       `${lastSelectedFile}${
         this.lastSelectedElement.classList.contains("folder-row") ? "/" : ""
       }`
     );
+
+    // Reopen the previously opened folders after render
+    await this.updateComplete;
+    openedDetails.forEach((el) => {
+      el.setAttribute("open", "");
+    });
   }
 
   async switchToFile(indexOrName) {
@@ -577,6 +629,19 @@ class FileTree extends LitElement {
       }
     }
     return filename;
+  }
+
+  animateCue() {
+    const cueEl = this.shadowRoot?.querySelector(".loading-cue-overlay");
+    if (cueEl) {
+      cueEl.classList.remove("loading-cue-overlay--slide");
+      // This triggers browser to stop batching changes because it has to evaluate something.
+      // eslint-disable-next-line no-void
+      void this.offsetWidth;
+      // So that when we arrive here, the browser sees this adding as an actual 'change'
+      // and this means the animation gets refired.
+      cueEl.classList.add("loading-cue-overlay--slide");
+    }
   }
 }
 customElements.define("file-tree", FileTree);

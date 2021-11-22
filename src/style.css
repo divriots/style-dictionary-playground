@@ -24,8 +24,8 @@ body {
 body {
   background: linear-gradient(
       180deg,
-      rgb(217, 248, 245) 30%,
-      rgba(255, 255, 255, 0) 60%
+      rgb(217, 248, 245) 20%,
+      rgba(255, 255, 255, 0) 50%
     ),
     linear-gradient(to right, #2e2e46, #158581);
 }
@@ -116,6 +116,41 @@ file-tree {
   background-color: #1e1e1e;
   border-top-right-radius: var(--border-radius-editor);
   border-bottom-right-radius: var(--border-radius-editor);
+}
+
+.card-container {
+  width: min(1000px, 80vw);
+  margin: 0 auto;
+  margin-top: 5rem;
+  color: white;
+}
+
+#frame-popout {
+  right: 0;
+  top: 50%;
+}
+
+.viewport-btn-container {
+  width: max-content;
+  margin: 2rem auto 1rem auto;
+}
+
+.frame-btn {
+  background-color: #82dbd2;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.frame-btn:hover {
+  cursor: pointer;
+  background-color: #5bb8ae;
+}
+
+#card-frame {
+  display: block;
+  margin: 0 auto;
+  border: none;
 }
 
 .explainer {
