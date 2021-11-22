@@ -276,6 +276,27 @@ export async function repopulateFileTree() {
 
   const outputFiles = files.filter((file) => !inputFiles.includes(file));
 
-  fileTreeEl.inputFiles = inputFiles;
   fileTreeEl.outputFiles = outputFiles;
+  fileTreeEl.inputFiles = inputFiles;
+
+  mightDispatchTokens();
+}
+
+let oldTokens = [];
+function mightDispatchTokens() {
+  // Naive compare of the tokens
+  if (
+    JSON.stringify(oldTokens) !== JSON.stringify(styleDictionaryInstance.tokens)
+  ) {
+    oldTokens = styleDictionaryInstance.tokens;
+    dispatchTokens();
+  }
+}
+
+export function dispatchTokens() {
+  window.dispatchEvent(
+    new CustomEvent("sd-tokens", {
+      detail: styleDictionaryInstance.tokens,
+    })
+  );
 }
