@@ -33,21 +33,22 @@ async function cleanPlatformOutputDirs() {
 
 // If we don't have the CSS props or card tokens
 // there's no use in showing the card component demo
-function displayOrHideCard() {
-  if (
-    !fs.existsSync("build/css/_variables.css") ||
-    !fs.existsSync("tokens/card/card.json")
-  ) {
+function getCSSText(filePath) {
+  if (!fs.existsSync(filePath)) {
     document.querySelector(".card-container").style.display = "none";
-    return;
+    return "";
   }
-  document.querySelector(".card-container").style.display = "block";
+  const cssProps = fs.readFileSync(filePath, "utf-8");
+  if (cssProps.match(/--sd-card-/g)) {
+    document.querySelector(".card-container").style.display = "block";
+  } else {
+    document.querySelector(".card-container").style.display = "none";
+  }
+  return cssProps;
 }
 
 function exportCSSPropsToCardFrame() {
-  displayOrHideCard();
-
-  const cssProps = fs.readFileSync("build/css/_variables.css", "utf-8");
+  const cssProps = getCSSText("build/css/_variables.css");
 
   const cardFrame = document.getElementById("card-frame");
   // if iframe is not fully loaded we can't inject the CSS sheet yet
@@ -174,7 +175,6 @@ export default async function runStyleDictionary() {
       // matches ts, js, mjs
       pattern: /\.(j|mj)s$/,
       parse: async ({ filePath }) => {
-        const stringJS = fs.readFileSync(filePath, "utf-8");
         const bundled = await bundle(filePath);
         const url = URL.createObjectURL(
           new Blob([bundled], { type: "text/javascript" })

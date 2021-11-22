@@ -148,10 +148,15 @@
         share!
       </p>
     </div>
-    <button id="jsSwitchBtn" class="js-switch-btn">
-      Switch to JS config instead of JSON
-    </button>
     <div class="playground-container">
+      <div id="jsSwitchContainer" class="switch-btn-container">
+        <button id="jsSwitchBtn" class="js-switch-btn">Switch to JS</button>
+        <button
+          id="jsSwitchClose"
+          aria-label="Hide these buttons"
+          class="codicon codicon-chrome-close"
+        ></button>
+      </div>
       <file-tree></file-tree>
       <div style="height: 100%" id="monaco-container"></div>
     </div>

@@ -278,7 +278,18 @@ export async function saveCurrentFile() {
   await rerunStyleDictionaryIfSourceChanged(`/${selectedFile}`);
 }
 
+function openOrCloseJSSwitch(file) {
+  const container = document.getElementById("jsSwitchContainer");
+  if (container.hasAttribute("closed-by-user")) {
+    return;
+  }
+  if (configPaths.includes(`/${file}`) && file.endsWith(".json")) {
+    container.style.display = "flex";
+  }
+}
+
 export async function switchToFile(file) {
+  openOrCloseJSSwitch(file);
   const ext = path.extname(file).slice(1);
   const lang = extensionMap[ext] || ext;
   const fileData = await new Promise((resolve) => {
