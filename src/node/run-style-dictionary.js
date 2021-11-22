@@ -96,6 +96,7 @@ export function findUsedConfigPath() {
 
 export default async function runStyleDictionary() {
   console.log("Running style-dictionary...");
+  document.querySelector("file-tree").animateCue();
   await cleanPlatformOutputDirs();
   let newStyleDictionary;
   const configPath = findUsedConfigPath();
