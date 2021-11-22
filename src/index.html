@@ -154,6 +154,29 @@
       <file-tree></file-tree>
       <div style="height: 100%" id="monaco-container"></div>
     </div>
+    <div class="card-container">
+      <h2>Card Component example</h2>
+      <p>
+        Style Dictionary can output to lots of different formats, for example
+        Web or iOS.
+      </p>
+      <p>
+        Below is a card component which is based on the tokens for its
+        border-radius. It uses a different radii token for mobile viewport
+        versus desktop. Try changing the token!
+      </p>
+      <p>
+        Note: if you're viewing this on small viewport below 740px, the frame
+        below will be set to mobile.
+      </p>
+      <div id="frame-popout">
+        <div class="viewport-btn-container">
+          <button class="frame-btn" id="viewport-btn">View Mobile</button>
+          <button class="frame-btn" id="popout-btn">Pop-out</button>
+        </div>
+        <iframe id="card-frame" height="432" src="./card/card.html"></iframe>
+      </div>
+    </div>
     <div class="explainer">
       <h2>How it works</h2>
       <p>

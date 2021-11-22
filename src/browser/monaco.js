@@ -88,4 +88,5 @@ ensureMonacoIsLoaded().then(() => {
   editor = monaco.editor.create(document.getElementById("monaco-container"), {
     theme: "vs-dark",
   });
+  editor.getModel().updateOptions({ tabSize: 2 });
 });

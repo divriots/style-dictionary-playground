@@ -11,6 +11,7 @@ const filesToCopy = [
   path.resolve("src", "favicon.ico"),
   path.resolve("src", "style.css"),
   path.resolve("src", "assets"),
+  path.resolve("src", "card"),
 ];
 
 const EMPTY_MODULE_ID = "$empty$";

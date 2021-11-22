@@ -484,7 +484,13 @@ class FileTree extends LitElement {
       : this.checkedFolderEl.getAttribute("full-path") || "";
 
     const input = document.createElement("input");
-    parentFolder.appendChild(input);
+    if (parentFolder.id === "file-list") {
+      const outputFiles = parentFolder.querySelector(".output-files");
+      outputFiles.insertAdjacentElement("beforebegin", input);
+    } else {
+      parentFolder.appendChild(input);
+    }
+
     input.closest("details")?.setAttribute("open", "");
     input.addEventListener("blur", (ev) => {
       if (ev.target.isConnected) {
@@ -527,19 +533,31 @@ class FileTree extends LitElement {
       const curr = [...this.folderButtons, ...this.fileButtons].find((btn) => {
         return btn.getAttribute("full-path") === fullPath;
       });
+
       if (curr) {
         curr.click();
+        curr.setAttribute("checked", true);
+        this.focusInRoot = false;
       }
     } catch (e) {}
   }
 
   async removeFileOrFolder() {
     const lastSelectedFile = this.lastSelectedElement.getAttribute("full-path");
-    removeFile(
+    const openedDetails = Array.from(
+      this.shadowRoot.querySelectorAll("details[open]")
+    );
+    await removeFile(
       `${lastSelectedFile}${
         this.lastSelectedElement.classList.contains("folder-row") ? "/" : ""
       }`
     );
+
+    // Reopen the previously opened folders after render
+    await this.updateComplete;
+    openedDetails.forEach((el) => {
+      el.setAttribute("open", "");
+    });
   }
 
   async switchToFile(indexOrName) {

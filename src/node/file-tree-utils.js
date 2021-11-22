@@ -32,7 +32,7 @@ export async function createInputFiles() {
   const urlSplit = window.location.href.split("#project=");
   if (urlSplit.length > 1) {
     const encoded = urlSplit[1];
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 200));
     const parsedContents = JSON.parse(flate.deflate_decode(encoded));
     await Promise.all(
       Object.entries(parsedContents).map(async ([file, content]) => {
@@ -48,107 +48,154 @@ export async function createInputFiles() {
       })
     );
   } else {
-    await new Promise((resolve) => {
-      fs.mkdir(tokensPath, (err) => {
-        resolve();
-      });
-    });
+    fs.mkdirSync(tokensPath);
+    fs.mkdirSync(`${tokensPath}/color`);
+    fs.mkdirSync(`${tokensPath}/card`);
+    fs.mkdirSync(`${tokensPath}/radii`);
 
-    await new Promise((resolve) => {
-      fs.mkdir(`${tokensPath}/color`, (err) => {
-        resolve();
-      });
-    });
-    // Create SD config
-    await new Promise((resolve) => {
-      fs.writeFile(
-        // take the config.json by default
-        configPaths[2],
-        JSON.stringify(
-          {
-            source: ["tokens/**/*.json"],
-            platforms: {
-              css: {
-                transformGroup: "css",
-                prefix: "sd",
-                buildPath: "build/css/",
-                files: [
-                  {
-                    destination: "_variables.css",
-                    format: "css/variables",
-                  },
-                ],
-              },
-              js: {
-                transformGroup: "js",
-                buildPath: "build/js/",
-                files: [
-                  {
-                    destination: "variables.js",
-                    format: "javascript/es6",
-                  },
-                ],
-              },
-            },
-          },
-          null,
-          2
-        ),
-        (err) => {
-          resolve();
-        }
-      );
-    });
-
-    // Create some tokens (color)
-    await new Promise((resolve) => {
-      fs.writeFile(
-        path.join(`${tokensPath}/color`, "base.json"),
-        JSON.stringify(
-          {
-            color: {
-              base: {
-                gray: {
-                  light: { value: "#CCCCCC" },
-                  medium: { value: "#999999" },
-                  dark: { value: "#111111" },
+    fs.writeFileSync(
+      // take the config.json by default
+      configPaths[2],
+      JSON.stringify(
+        {
+          source: ["tokens/**/*.json"],
+          platforms: {
+            css: {
+              transformGroup: "css",
+              prefix: "sd",
+              buildPath: "build/css/",
+              files: [
+                {
+                  destination: "_variables.css",
+                  format: "css/variables",
                 },
-                red: { value: "#FF0000" },
-                green: { value: "#00FF00" },
-              },
+              ],
+            },
+            js: {
+              transformGroup: "js",
+              buildPath: "build/js/",
+              files: [
+                {
+                  destination: "variables.js",
+                  format: "javascript/es6",
+                },
+              ],
             },
           },
-          null,
-          2
-        ),
-        (err) => {
-          resolve();
-        }
-      );
-    });
+        },
+        null,
+        2
+      )
+    );
 
-    // Create some tokens (color)
-    await new Promise((resolve) => {
-      fs.writeFile(
-        path.join(`${tokensPath}/color`, "font.json"),
-        JSON.stringify(
-          {
-            color: {
-              font: {
-                base: { value: "{color.base.red.value}" },
-                secondary: { value: "{color.base.green.value}" },
-                tertiary: { value: "{color.base.gray.light.value}" },
+    fs.writeFileSync(
+      path.join(`${tokensPath}/color`, "base.json"),
+      JSON.stringify(
+        {
+          color: {
+            base: {
+              gray: {
+                light: { value: "#CCCCCC" },
+                medium: { value: "#999999" },
+                dark: { value: "#111111" },
+              },
+              red: { value: "#FF0000" },
+              green: { value: "#00FF00" },
+            },
+          },
+        },
+        null,
+        2
+      )
+    );
+
+    fs.writeFileSync(
+      path.join(`${tokensPath}/color`, "base.json"),
+      JSON.stringify(
+        {
+          color: {
+            base: {
+              gray: {
+                light: { value: "#CCCCCC" },
+                medium: { value: "#999999" },
+                dark: { value: "#111111" },
+              },
+              red: { value: "#FF0000" },
+              green: { value: "#00FF00" },
+            },
+          },
+        },
+        null,
+        2
+      )
+    );
+
+    fs.writeFileSync(
+      path.join(`${tokensPath}/color`, "font.json"),
+      JSON.stringify(
+        {
+          color: {
+            font: {
+              base: { value: "{color.base.red.value}" },
+              secondary: { value: "{color.base.green.value}" },
+              tertiary: { value: "{color.base.gray.light.value}" },
+            },
+          },
+        },
+        null,
+        2
+      )
+    );
+
+    fs.writeFileSync(
+      path.join(`${tokensPath}/card`, "card.json"),
+      JSON.stringify(
+        {
+          card: {
+            border: {
+              radius: {
+                mobile: {
+                  value: "{radii.none.value}",
+                },
+                desktop: {
+                  value: "{radii.sm.value}",
+                },
+              },
+            },
+            heading: {
+              color: {
+                value: "{color.base.green.value}",
+              },
+            },
+            text: {
+              color: {
+                value: "{color.base.gray.dark.value}",
               },
             },
           },
-          null,
-          2
-        ),
-        (err) => {
-          resolve();
-        }
-      );
-    });
+        },
+        null,
+        2
+      )
+    );
+
+    fs.writeFileSync(
+      path.join(`${tokensPath}/radii`, "base.json"),
+      JSON.stringify(
+        {
+          radii: {
+            none: {
+              value: "0",
+            },
+            sm: {
+              value: "8px",
+            },
+          },
+        },
+        null,
+        2
+      )
+    );
   }
 }
 

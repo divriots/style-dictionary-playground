@@ -29,6 +29,35 @@ async function cleanPlatformOutputDirs() {
   );
 }
 
+// If we don't have the CSS props or card tokens
+// there's no use in showing the card component demo
+function displayOrHideCard() {
+  if (
+    !fs.existsSync("build/css/_variables.css") ||
+    !fs.existsSync("tokens/card/card.json")
+  ) {
+    document.querySelector(".card-container").style.display = "none";
+    return;
+  }
+  document.querySelector(".card-container").style.display = "block";
+}
+
+function exportCSSPropsToCardFrame() {
+  displayOrHideCard();
+
+  const cssProps = fs.readFileSync("build/css/_variables.css", "utf-8");
+
+  const cardFrame = document.getElementById("card-frame");
+  // if iframe is not fully loaded we can't inject the CSS sheet yet
+  if (cardFrame.contentWindow.document.readyState !== "complete") {
+    cardFrame.contentWindow.addEventListener("load", () => {
+      cardFrame?.contentWindow.insertCSS(cssProps);
+    });
+    return;
+  }
+  cardFrame?.contentWindow.insertCSS(cssProps);
+}
+
 export async function rerunStyleDictionaryIfSourceChanged(file) {
   const { source } = styleDictionaryInstance.options;
   const sourceFiles = new Set();
@@ -88,5 +117,6 @@ export default async function runStyleDictionary() {
   await newStyleDictionary.buildAllPlatforms();
   styleDictionaryInstance = newStyleDictionary;
   await repopulateFileTree();
+  exportCSSPropsToCardFrame();
   return newStyleDictionary;
 }
