@@ -15,7 +15,7 @@
   "dependencies": {
     "@lion/core": "^0.18.4",
     "@lion/overlays": "^0.26.1",
-    "browser-style-dictionary": "^3.0.2-browser.5",
+    "browser-style-dictionary": "^3.0.2-browser.6",
     "buffer": "^6.0.3",
     "glob": "^7.2.0",
     "lit": "^2.0.0",
@@ -40,7 +40,7 @@
     "file-loader": "^6.2.0",
     "patch-package": "^6.4.7",
     "rimraf": "^3.0.2",
-    "rollup": "^2.57.0",
+    "rollup": "^2.60.1",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-visualizer": "^5.5.2",
     "style-loader": "^3.3.0",
