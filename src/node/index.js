@@ -26,8 +26,6 @@ export async function changeLang(lang) {
 }
 
 export async function encodeContents(files) {
-  const configPath = findUsedConfigPath();
-  files = [configPath, ...files];
   const contents = {};
   await Promise.all(
     files.map(async (file) => {
