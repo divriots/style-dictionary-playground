@@ -8,6 +8,7 @@ import {
 } from "./file-tree-utils.js";
 import runStyleDictionary, {
   findUsedConfigPath,
+  rerunStyleDictionaryIfSourceChanged,
 } from "./run-style-dictionary.js";
 import { ensureMonacoIsLoaded, editor, monaco } from "../browser/monaco.js";
 import "../browser/index.js";
@@ -41,18 +42,23 @@ export async function encodeContents(files) {
   return flate.deflate_encode(content);
 }
 
-async function switchToJS() {
+async function switchToJS(ev) {
   const configPath = findUsedConfigPath();
   if (configPath.endsWith(".json")) {
+    ev.target.parentElement.style.display = "none";
     const contents = fs.readFileSync(configPath, "utf-8");
     const newPath = `${configPath.split(".json")[0]}.js`;
     const newContents = `export default ${contents};`;
     fs.unlinkSync(configPath);
     fs.writeFileSync(newPath, newContents, "utf-8");
-    await runStyleDictionary();
-    await repopulateFileTree();
+    await rerunStyleDictionaryIfSourceChanged(newPath);
     await document.querySelector("file-tree").switchToFile(newPath);
   }
+}
+
+function switchClose(ev) {
+  ev.target.parentElement.style.display = "none";
+  ev.target.parentElement.setAttribute("closed-by-user", "");
 }
 
 (async function () {
@@ -67,6 +73,9 @@ async function switchToJS() {
     editor.layout();
   });
   document.getElementById("jsSwitchBtn").addEventListener("click", switchToJS);
+  document
+    .getElementById("jsSwitchClose")
+    .addEventListener("click", switchClose);
   await ensureMonacoIsLoaded();
   editor.layout({});
   editor.layout();
