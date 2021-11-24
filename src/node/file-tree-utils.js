@@ -15,6 +15,7 @@ const extensionMap = {
   js: "javascript",
 };
 const tokensPath = path.resolve("tokens");
+const fileTreeEl = document.querySelector("file-tree");
 
 async function currentFileContentChanged() {
   const selectedFileBtn = getSelectedFileBtn();
@@ -24,7 +25,6 @@ async function currentFileContentChanged() {
 }
 
 function getSelectedFileBtn() {
-  const fileTreeEl = document.querySelector("file-tree");
   return fileTreeEl.checkedFileBtn;
 }
 
@@ -138,7 +138,7 @@ export async function createInputFiles() {
             font: {
               base: { value: "{color.base.red.value}" },
               secondary: { value: "{color.base.green.value}" },
-              tertiary: { value: "{color.base.gray.light.value}" },
+              tertiary: { value: "{color.base.gray.dark.value}" },
             },
           },
         },
@@ -164,12 +164,12 @@ export async function createInputFiles() {
             },
             heading: {
               color: {
-                value: "{color.base.green.value}",
+                value: "{color.font.base.value}",
               },
             },
             text: {
               color: {
-                value: "{color.base.gray.dark.value}",
+                value: "{color.font.tertiary.value}",
               },
             },
           },
@@ -230,6 +230,14 @@ export async function removeFile(file) {
     });
   }
   await repopulateFileTree();
+}
+
+export async function openAllFolders() {
+  Array.from(fileTreeEl.shadowRoot.querySelectorAll("details")).forEach(
+    (el) => {
+      el.setAttribute("open", "");
+    }
+  );
 }
 
 export async function clearAll() {
@@ -320,7 +328,6 @@ export async function setupFileChangeHandlers() {
 
 export async function repopulateFileTree() {
   const files = await asyncGlob("**/*", { fs, mark: true });
-  const fileTreeEl = document.querySelector("file-tree");
 
   const outputFolders = new Set();
   Object.entries(styleDictionaryInstance.platforms).forEach(([key, value]) => {

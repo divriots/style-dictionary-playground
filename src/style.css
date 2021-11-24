@@ -138,8 +138,10 @@ file-tree {
 }
 
 #frame-popout {
+  position: fixed;
   right: 0;
   top: 50%;
+  transform: translateY(-50%);
 }
 
 .viewport-btn-container {
@@ -162,6 +164,7 @@ file-tree {
 #card-frame {
   display: block;
   margin: 0 auto;
+  height: 450px;
   border: none;
 }
 
