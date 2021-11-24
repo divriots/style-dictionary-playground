@@ -5,6 +5,7 @@ import {
   setupFileChangeHandlers,
   repopulateFileTree,
   dispatchTokens,
+  openAllFolders,
 } from "./file-tree-utils.js";
 import runStyleDictionary, {
   findUsedConfigPath,
@@ -66,6 +67,7 @@ function switchClose(ev) {
   await createInputFiles();
   await runStyleDictionary();
   await repopulateFileTree();
+  await openAllFolders();
   await setupFileChangeHandlers();
   window.addEventListener("resize", async () => {
     await ensureMonacoIsLoaded();
