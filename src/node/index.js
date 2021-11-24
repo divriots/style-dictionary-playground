@@ -66,7 +66,6 @@ function switchClose(ev) {
   window.addEventListener("sd-tokens-request", dispatchTokens);
   await createInputFiles();
   await runStyleDictionary();
-  await repopulateFileTree();
   await openAllFolders();
   await setupFileChangeHandlers();
   window.addEventListener("resize", async () => {
