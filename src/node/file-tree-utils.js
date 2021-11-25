@@ -294,6 +294,8 @@ function openOrCloseJSSwitch(file) {
   }
   if (configPaths.includes(`/${file}`) && file.endsWith(".json")) {
     container.style.display = "flex";
+  } else {
+    container.style.display = "none";
   }
 }
 

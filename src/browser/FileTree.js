@@ -76,7 +76,7 @@ class FileTree extends LitElement {
 
         .row {
           cursor: pointer;
-          padding-right: 0.75rem;
+          padding-right: 1.25rem;
         }
 
         img {
