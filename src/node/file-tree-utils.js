@@ -233,6 +233,7 @@ export async function removeFile(file) {
 }
 
 export async function openAllFolders() {
+  await fileTreeEl.updateComplete;
   Array.from(fileTreeEl.shadowRoot.querySelectorAll("details")).forEach(
     (el) => {
       el.setAttribute("open", "");
@@ -293,6 +294,8 @@ function openOrCloseJSSwitch(file) {
   }
   if (configPaths.includes(`/${file}`) && file.endsWith(".json")) {
     container.style.display = "flex";
+  } else {
+    container.style.display = "none";
   }
 }
 
@@ -330,9 +333,17 @@ export async function repopulateFileTree() {
   const files = await asyncGlob("**/*", { fs, mark: true });
 
   const outputFolders = new Set();
-  Object.entries(styleDictionaryInstance.platforms).forEach(([key, value]) => {
-    outputFolders.add(value.buildPath.split("/")[0]);
-  });
+  if (styleDictionaryInstance) {
+    Object.entries(styleDictionaryInstance.platforms).forEach(
+      ([key, value]) => {
+        outputFolders.add(value.buildPath.split("/")[0]);
+      }
+    );
+  } else {
+    console.error(
+      "Trying to repopulate file tree without a valid style-dictionary object to check which files are input vs output."
+    );
+  }
   const inputFiles = files.filter((file) => {
     return !Array.from(outputFolders).some((outputFolder) =>
       file.startsWith(`${outputFolder}/`)
@@ -349,6 +360,9 @@ export async function repopulateFileTree() {
 
 let oldTokens = [];
 function mightDispatchTokens() {
+  if (!styleDictionaryInstance) {
+    return;
+  }
   // Naive compare of the tokens
   if (
     JSON.stringify(oldTokens) !== JSON.stringify(styleDictionaryInstance.tokens)

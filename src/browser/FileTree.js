@@ -29,11 +29,14 @@ class FileTree extends LitElement {
           flex-direction: column;
           align-items: stretch;
           background-color: #171717;
-          max-width: 400px;
           position: relative;
         }
 
         #file-list {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          width: 200px;
           color: white;
           overflow-y: auto;
         }
@@ -41,6 +44,7 @@ class FileTree extends LitElement {
         .file,
         .folder {
           display: inline-block;
+          width: max-content;
         }
 
         .folder {
@@ -54,12 +58,16 @@ class FileTree extends LitElement {
           margin-left: 1em;
         }
 
+        .file > span {
+          white-space: nowrap;
+        }
+
         #file-list > details {
           margin-bottom: 0.5em;
         }
 
         details {
-          padding-left: 1em;
+          padding-left: 0.75em;
         }
 
         summary {
@@ -68,8 +76,7 @@ class FileTree extends LitElement {
 
         .row {
           cursor: pointer;
-
-          padding-right: 1rem;
+          padding-right: 1.25rem;
         }
 
         img {
@@ -167,14 +174,12 @@ class FileTree extends LitElement {
           }
         }
 
-        #file-list {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
+        .input-files {
+          flex-grow: 1;
+          overflow-x: auto;
         }
 
         .output-files {
-          flex-grow: 1;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;

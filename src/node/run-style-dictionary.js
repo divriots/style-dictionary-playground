@@ -49,6 +49,9 @@ function getCSSText(filePath) {
 
 function exportCSSPropsToCardFrame() {
   const cssProps = getCSSText("build/css/_variables.css");
+  if (!cssProps) {
+    return;
+  }
 
   const cardFrame = document.getElementById("card-frame");
   // if iframe is not fully loaded we can't inject the CSS sheet yet
@@ -61,7 +64,13 @@ function exportCSSPropsToCardFrame() {
   cardFrame?.contentWindow.insertCSS(cssProps);
 }
 
-export async function rerunStyleDictionaryIfSourceChanged(file) {
+async function getInputFiles() {
+  const allFiles = await asyncGlob("**/*", { nodir: true, fs });
+  // without a correct SD instance, we can't really know for sure what the output files are
+  // therefore, we can't know what the input files are (tokens + other used files via relative imports)
+  if (!styleDictionaryInstance) {
+    return [];
+  }
   const { platforms } = styleDictionaryInstance.options;
   let outputFiles = [];
   await Promise.all(
@@ -76,26 +85,36 @@ export async function rerunStyleDictionaryIfSourceChanged(file) {
       });
     })
   );
-  const allFiles = await asyncGlob("**/*", { nodir: true, fs });
-  const inputFiles = allFiles.filter((file) => !outputFiles.includes(file));
+  return allFiles.filter((file) => !outputFiles.includes(file));
+}
 
-  // Send to analytics that user ran style dictionary, with how many source files (default 3)
-  // to get a feeling of how much they are testing out
-  mixpanel.track("Run Dictionary", {
-    sourceFiles: inputFiles.size,
-    platforms: styleDictionaryInstance.platforms,
-  });
+export async function rerunStyleDictionaryIfSourceChanged(file) {
+  const previousRunError = !styleDictionaryInstance;
 
-  const isInputFile = inputFiles.includes(file.replace(/^\//, ""));
-
-  // Only run style dictionary if the config our source tokens were changed
-  if (!isInputFile) {
-    return;
+  // If previous run was okay, check whether we need a new run
+  if (!previousRunError) {
+    const inputFiles = await getInputFiles();
+    const isInputFile = inputFiles.includes(file.replace(/^\//, ""));
+    // Only run style dictionary if the config or input files were changed
+    if (!isInputFile) {
+      return;
+    }
   }
 
-  const encoded = await encodeContents(inputFiles);
-  window.location.href = `${window.location.origin}/#project=${encoded}`;
   await runStyleDictionary();
+
+  const inputFiles = await getInputFiles();
+  // If no inputFiles, run was error so can't send something useful to analytics atm or encode contents in url
+  if (inputFiles.length > 0) {
+    // Send to analytics that user ran style dictionary, with how many source files (default 3)
+    // to get a feeling of how much they are testing out
+    mixpanel.track("Run Dictionary", {
+      sourceFiles: inputFiles.size,
+      platforms: styleDictionaryInstance.platforms,
+    });
+    const encoded = await encodeContents(inputFiles);
+    window.location.href = `${window.location.origin}/#project=${encoded}`;
+  }
 }
 
 export function findUsedConfigPath() {
@@ -153,42 +172,47 @@ export default async function runStyleDictionary() {
   await cleanPlatformOutputDirs();
   let cfgObj;
   const configPath = findUsedConfigPath();
+  let newStyleDictionary = {};
+  try {
+    // If .js, we need to parse it as actual JS without resorting to eval/Function
+    // Instead, we put it in a blob and create a URL from it that we can import
+    // That way, malicious code would be scoped only to the blob, which is safer.
+    if (configPath.endsWith(".js")) {
+      const stringJS = fs.readFileSync(configPath, "utf-8");
+      const url = URL.createObjectURL(
+        new Blob([stringJS], { type: "text/javascript" })
+      );
+      const configMod = await import(url);
+      cfgObj = configMod.default;
+    } else {
+      cfgObj = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    }
 
-  // If .js, we need to parse it as actual JS without resorting to eval/Function
-  // Instead, we put it in a blob and create a URL from it that we can import
-  // That way, malicious code would be scoped only to the blob, which is safer.
-  if (configPath.endsWith(".js")) {
-    const stringJS = fs.readFileSync(configPath, "utf-8");
-    const url = URL.createObjectURL(
-      new Blob([stringJS], { type: "text/javascript" })
-    );
-    const configMod = await import(url);
-    cfgObj = configMod.default;
-  } else {
-    cfgObj = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-  }
-
-  // Custom parser for JS files
-  cfgObj.parsers = [
-    ...(cfgObj.parsers || []),
-    {
-      // matches ts, js, mjs
-      pattern: /\.(j|mj)s$/,
-      parse: async ({ filePath }) => {
-        const bundled = await bundle(filePath);
-        const url = URL.createObjectURL(
-          new Blob([bundled], { type: "text/javascript" })
-        );
-        const { default: token } = await import(url);
-        return token;
+    // Custom parser for JS files
+    cfgObj.parsers = [
+      ...(cfgObj.parsers || []),
+      {
+        // matches ts, js, mjs
+        pattern: /\.(j|mj)s$/,
+        parse: async ({ filePath }) => {
+          const bundled = await bundle(filePath);
+          const url = URL.createObjectURL(
+            new Blob([bundled], { type: "text/javascript" })
+          );
+          const { default: token } = await import(url);
+          return token;
+        },
       },
-    },
-  ];
+    ];
 
-  const newStyleDictionary = await StyleDictionary.extend(cfgObj);
-  await newStyleDictionary.buildAllPlatforms();
-  styleDictionaryInstance = newStyleDictionary;
-  await repopulateFileTree();
-  exportCSSPropsToCardFrame();
-  return newStyleDictionary;
+    newStyleDictionary = await StyleDictionary.extend(cfgObj);
+    styleDictionaryInstance = newStyleDictionary;
+    await newStyleDictionary.buildAllPlatforms();
+    exportCSSPropsToCardFrame();
+  } catch (e) {
+    console.error(`Style Dictionary error: ${e}`);
+  } finally {
+    await repopulateFileTree();
+    return newStyleDictionary;
+  }
 }
