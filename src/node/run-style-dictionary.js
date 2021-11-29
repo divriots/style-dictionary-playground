@@ -57,7 +57,9 @@ function exportCSSPropsToCardFrame() {
   // if iframe is not fully loaded we can't inject the CSS sheet yet
   if (cardFrame.contentWindow.document.readyState !== "complete") {
     cardFrame.contentWindow.addEventListener("load", () => {
-      cardFrame?.contentWindow.insertCSS(cssProps);
+      cardFrame.contentWindow.requestAnimationFrame(() => {
+        cardFrame?.contentWindow.insertCSS(cssProps);
+      });
     });
     return;
   }
