@@ -3,7 +3,6 @@ import fs from "fs";
 import {
   createInputFiles,
   setupFileChangeHandlers,
-  repopulateFileTree,
   dispatchTokens,
   openAllFolders,
 } from "./file-tree-utils.js";

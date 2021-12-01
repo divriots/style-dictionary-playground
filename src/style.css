@@ -71,6 +71,10 @@ h1 {
   font-size: 2.5rem;
 }
 
+h2 {
+  margin-top: 3rem;
+}
+
 .intro p {
   font-size: 1.25rem;
   margin: 0.5rem 0;
@@ -170,7 +174,7 @@ file-tree {
 
 .explainer {
   max-width: 1000px;
-  margin: 5rem auto 0 auto;
+  margin: 2rem auto 0 auto;
   padding-bottom: 5rem;
   color: white;
 }

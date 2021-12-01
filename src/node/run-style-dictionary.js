@@ -87,7 +87,9 @@ async function getInputFiles() {
       });
     })
   );
-  return allFiles.filter((file) => !outputFiles.includes(file));
+  return allFiles.filter(
+    (file) => !outputFiles.includes(file) && file !== "format-helpers.esm.js"
+  );
 }
 
 export async function rerunStyleDictionaryIfSourceChanged(file) {
@@ -180,12 +182,12 @@ export default async function runStyleDictionary() {
     // Instead, we put it in a blob and create a URL from it that we can import
     // That way, malicious code would be scoped only to the blob, which is safer.
     if (configPath.endsWith(".js")) {
-      const stringJS = fs.readFileSync(configPath, "utf-8");
+      const bundled = await bundle(configPath);
       const url = URL.createObjectURL(
-        new Blob([stringJS], { type: "text/javascript" })
+        new Blob([bundled], { type: "text/javascript" })
       );
-      const configMod = await import(url);
-      cfgObj = configMod.default;
+      const { default: cfg } = await import(url);
+      cfgObj = cfg;
     } else {
       cfgObj = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     }
