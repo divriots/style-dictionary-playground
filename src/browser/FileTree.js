@@ -425,10 +425,6 @@ class FileTree extends LitElement {
   asDetails(tree, memo = "") {
     return html`
       ${Object.entries(tree).map(([k, v]) => {
-        // We don't want to show this file in the tree, not interesting
-        if (k === "format-helpers.esm.js") {
-          return "";
-        }
         return v === ""
           ? html`
               <div

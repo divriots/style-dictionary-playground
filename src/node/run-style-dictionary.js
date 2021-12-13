@@ -2,6 +2,7 @@ import fs from "fs";
 import util from "util";
 import glob from "glob";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
 import * as rollup from "rollup";
 import StyleDictionary from "browser-style-dictionary/browser.js";
 import mixpanel from "mixpanel-browser";
@@ -87,9 +88,7 @@ async function getInputFiles() {
       });
     })
   );
-  return allFiles.filter(
-    (file) => !outputFiles.includes(file) && file !== "format-helpers.esm.js"
-  );
+  return allFiles.filter((file) => !outputFiles.includes(file));
 }
 
 export async function rerunStyleDictionaryIfSourceChanged(file) {
@@ -142,6 +141,8 @@ export function findUsedConfigPath() {
  *  }
  */
 async function bundle(inputPath) {
+  const sdName = uuidv4();
+  globalThis[sdName] = StyleDictionary;
   const rollupCfg = await rollup.rollup({
     input: inputPath,
     plugins: [
@@ -162,6 +163,25 @@ async function bundle(inputPath) {
             // try to load it from our virtual FS
             return fs.readFileSync(id, "utf-8");
           }
+        },
+      },
+      {
+        name: "sd-external",
+        // Naive and simplified regex version of rollup externals global plugin just for style-dictionary import..
+        transform(code) {
+          let rewrittenCode = code;
+          let matchRes = rewrittenCode.match(
+            /import (?<id>.+?) from 'style-dictionary';/,
+            ""
+          );
+          if (matchRes) {
+            let { id } = matchRes.groups;
+            // Remove the import statement, replace the id wherever used with the global
+            rewrittenCode = rewrittenCode
+              .replace(matchRes[0], "")
+              .replace(new RegExp(id, "g"), `globalThis['${sdName}']`);
+          }
+          return rewrittenCode;
         },
       },
     ],

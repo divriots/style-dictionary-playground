@@ -193,9 +193,19 @@
           Supports relative imports between JS files, to reuse token partials
         </li>
         <li>
-          Supports format helpers by importing:
-          <code>import formatHelpers from './format-helpers.esm.js';</code> in
-          the config
+          Supports using StyleDictionary object by importing:
+          <code
+            ><span style="color: #569cd6">import</span> StyleDictionary
+            <span style="color: #569cd6">from</span>
+            <span style="color: #ce9178">'style-dictionary'</span>;</code
+          >
+          in the config. This is useful if you need for example formatHelpers
+          (e.g.
+          <code
+            >StyleDictionary.formatHelpers.<span style="color: #569cd6"
+              >fileHeader</span
+            >(file)</code
+          >)
         </li>
       </ul>
       <h2>How it works</h2>

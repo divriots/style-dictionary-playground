@@ -30,6 +30,12 @@ body {
     linear-gradient(to right, #2e2e46, #158581);
 }
 
+code {
+  font-size: 1rem;
+  background-color: #1e1e1e;
+  padding: 2px;
+}
+
 sdp-nav {
   width: 100%;
 }

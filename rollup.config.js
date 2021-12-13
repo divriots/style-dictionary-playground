@@ -4,18 +4,6 @@ import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import inject from "@rollup/plugin-inject";
 import * as path from "path";
-import fs from "fs";
-
-const text = JSON.stringify(
-  fs.readFileSync(
-    path.resolve(
-      "node_modules",
-      "browser-style-dictionary",
-      "format-helpers.esm.js"
-    ),
-    "utf-8"
-  )
-);
 
 const filesToCopy = [
   path.resolve("src", "index.html"),
@@ -78,17 +66,6 @@ const plugins = [
     renderChunk(code) {
       // No clue why `glob_1.Glob;` ends up in bundle... useless line of code that actually creates fatal error >:(
       return code.replace(/glob_1\.Glob;/g, "");
-    },
-  },
-  {
-    name: "transform-format-helpers",
-    transform(code) {
-      const replaced = code.replace(/"\$format-helpers\$"/g, (match) => {
-        return text;
-      });
-      if (replaced !== code) {
-        return replaced;
-      }
     },
   },
 ];
