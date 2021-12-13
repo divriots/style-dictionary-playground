@@ -24,7 +24,6 @@
     "monaco-editor": "^0.28.1",
     "pako": "^2.0.4",
     "process": "^0.11.10",
-    "rollup-plugin-external-globals": "^0.6.1",
     "stream": "^0.0.2",
     "uuid": "^8.3.2",
     "wasm-flate": "^1.0.2-browser"
