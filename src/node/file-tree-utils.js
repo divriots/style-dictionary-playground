@@ -30,6 +30,9 @@ function getSelectedFileBtn() {
 
 export async function createInputFiles() {
   const urlSplit = window.location.href.split("#project=");
+  // Replaced with file content by rollup
+  fs.writeFileSync("format-helpers.esm.js", "$format-helpers$", "utf-8");
+
   if (urlSplit.length > 1) {
     const encoded = urlSplit[1];
     await new Promise((resolve) => setTimeout(resolve, 200));
