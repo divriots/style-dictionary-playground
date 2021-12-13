@@ -215,6 +215,12 @@ export async function createFolder(foldername) {
   });
 }
 
+export async function editFileName(filePath, newName, isFolder = false) {
+  const newPath = path.join(path.dirname(filePath), newName);
+  fs.renameSync(filePath, newPath);
+  await rerunStyleDictionaryIfSourceChanged(newPath, isFolder);
+}
+
 export async function removeFile(file) {
   if (file.endsWith("/")) {
     await new Promise((resolve) => {

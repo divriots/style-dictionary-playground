@@ -91,7 +91,10 @@ async function getInputFiles() {
   return allFiles.filter((file) => !outputFiles.includes(file));
 }
 
-export async function rerunStyleDictionaryIfSourceChanged(file) {
+export async function rerunStyleDictionaryIfSourceChanged(
+  file,
+  isFolder = false
+) {
   const previousRunError = !styleDictionaryInstance;
 
   // If previous run was okay, check whether we need a new run
@@ -99,11 +102,10 @@ export async function rerunStyleDictionaryIfSourceChanged(file) {
     const inputFiles = await getInputFiles();
     const isInputFile = inputFiles.includes(file.replace(/^\//, ""));
     // Only run style dictionary if the config or input files were changed
-    if (!isInputFile) {
+    if (!isInputFile && !isFolder) {
       return;
     }
   }
-
   await runStyleDictionary();
 
   const inputFiles = await getInputFiles();
@@ -234,7 +236,7 @@ export default async function runStyleDictionary() {
     await newStyleDictionary.buildAllPlatforms();
     exportCSSPropsToCardFrame();
   } catch (e) {
-    console.error(`Style Dictionary error: ${e}`);
+    console.error(`Style Dictionary error: ${e.stack}`);
   } finally {
     await repopulateFileTree();
     return newStyleDictionary;

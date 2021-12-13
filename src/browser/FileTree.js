@@ -1,5 +1,4 @@
 import { LitElement, css, html } from "lit";
-import codicon from "./codicon.css.js";
 import iconDefinitions from "./iconDefinitions.js";
 import { ensureMonacoIsLoaded, editor } from "./monaco.js";
 import runStyleDictionary from "../node/run-style-dictionary.js";
@@ -10,6 +9,7 @@ import {
   createFile,
   createFolder,
   removeFile,
+  editFileName,
 } from "../node/file-tree-utils.js";
 
 class FileTree extends LitElement {
@@ -22,7 +22,6 @@ class FileTree extends LitElement {
 
   static get styles() {
     return [
-      codicon,
       css`
         :host {
           display: flex;
@@ -30,6 +29,32 @@ class FileTree extends LitElement {
           align-items: stretch;
           background-color: #171717;
           position: relative;
+        }
+
+        .codicon[class*="codicon-"] {
+          font: normal normal normal 16px/1 codicon;
+          background-color: transparent;
+          border: none;
+          cursor: pointer;
+        }
+
+        .codicon-clear-all:before {
+          content: "\\eabf";
+        }
+        .codicon-edit:before {
+          content: "\\ea73";
+        }
+        .codicon-new-file:before {
+          content: "\\ea7f";
+        }
+        .codicon-new-folder:before {
+          content: "\\ea80";
+        }
+        .codicon-play:before {
+          content: "\\eb2c";
+        }
+        .codicon-trash:before {
+          content: "\\ea81";
         }
 
         #file-list {
@@ -109,7 +134,7 @@ class FileTree extends LitElement {
           background-color: #292929;
         }
 
-        input {
+        .new-file-input {
           margin-left: 1.5em;
           width: calc(100% - 3em);
           margin-right: 2em;
@@ -348,9 +373,13 @@ class FileTree extends LitElement {
       !this.checkedFileBtn &&
       this.outputFiles.length > 0
     ) {
-      this.switchToFile(0).then(() => {
-        this.openParentFolders();
-      });
+      const firstFilePath = this.inputFiles.filter(
+        (file) => !file.endsWith("/")
+      )[0];
+      const firstFileRow = this.shadowRoot.querySelector(
+        `[full-path='${firstFilePath}']`
+      );
+      firstFileRow.click();
     }
   }
 
@@ -372,6 +401,11 @@ class FileTree extends LitElement {
             title="New Folder"
             @click=${() => this.newFileOrFolder("folder")}
             class="codicon codicon-new-folder"
+          ></button>
+          <button
+            title="New File"
+            @click=${() => this.editFileName()}
+            class="codicon codicon-edit"
           ></button>
           <button
             title="Remove current file or folder"
@@ -487,19 +521,43 @@ class FileTree extends LitElement {
   rowClick(ev) {
     let { target, key } = ev;
 
-    if (key && key !== "Space" && key !== "Enter") {
+    // ignore this one, as it's just the file edit "apply" action
+    if (
+      target.classList.contains("edit-file-input") ||
+      (key !== undefined && key !== "F2" && key !== "Enter" && key !== " ")
+    ) {
       return;
     }
 
-    // get the "actual" target if the event originally came from the inner span
+    let row = target;
     if (!target.classList.contains(".row")) {
-      target = target.closest(".row");
+      row = target.closest(".row");
     }
-    this.lastSelectedElement = target;
-    if (target.classList.contains("file")) {
-      this.switchToFile(target.getAttribute("full-path"));
-    } else if (target.classList.contains("folder-row")) {
+    this.lastSelectedElement = row;
+    if (this.lastSelectedElement.classList.contains("file")) {
+      this.switchToFile(this.lastSelectedElement.getAttribute("full-path"));
+    } else if (this.lastSelectedElement.classList.contains("folder-row")) {
       this.clickFolder(ev);
+    }
+
+    const toggleDetails = () => {
+      const details = ev.target.closest("details");
+      if (details && row.classList.contains("folder-row")) {
+        details.hasAttribute("open")
+          ? details.removeAttribute("open")
+          : details.setAttribute("open", "");
+      }
+    };
+
+    switch (key) {
+      case "F2":
+        this.editFileName();
+        break;
+      case " ":
+        // prevent accidental scrolling
+        ev.preventDefault();
+        toggleDetails();
+        break;
     }
   }
 
@@ -523,6 +581,7 @@ class FileTree extends LitElement {
       : this.checkedFolderEl.getAttribute("full-path") || "";
 
     const input = document.createElement("input");
+    input.classList.add("new-file-input");
     if (parentFolder.id === "file-list") {
       const outputFiles = parentFolder.querySelector(".output-files");
       outputFiles.insertAdjacentElement("beforebegin", input);
@@ -579,6 +638,54 @@ class FileTree extends LitElement {
         this.focusInRoot = false;
       }
     } catch (e) {}
+  }
+
+  async editFileName() {
+    const lastSelectedFilePath =
+      this.lastSelectedElement.getAttribute("full-path");
+    const lastSelectedFileName = this.lastSelectedElement.innerText;
+    const spanChild = Array.from(this.lastSelectedElement.children).find(
+      (child) => child.tagName === "SPAN"
+    );
+    const isFolder = spanChild.classList.contains("folder");
+
+    if (spanChild) {
+      const inputEl = document.createElement("input");
+      inputEl.value = lastSelectedFileName;
+      inputEl.classList.add("edit-file-input");
+      inputEl.setAttribute("size", "10");
+      inputEl.setAttribute("aria-label", "Change file name");
+
+      const applyEdit = (ev) => {
+        const { value } = ev.target;
+        this._editFileName(lastSelectedFilePath, value, isFolder);
+        const newSpanEl = document.createElement("span");
+        newSpanEl.innerText = value;
+        if (isFolder) {
+          newSpanEl.classList.add("folder");
+        }
+        ev.target.insertAdjacentElement("beforebegin", newSpanEl);
+        ev.target.isAboutToBeRemoved = true;
+        ev.target.remove();
+        this.lastSelectedElement.focus();
+      };
+      inputEl.addEventListener("blur", (ev) => {
+        if (!ev.target.isAboutToBeRemoved) {
+          applyEdit(ev);
+        }
+      });
+      inputEl.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          applyEdit(ev);
+        }
+      });
+      spanChild.replaceWith(inputEl);
+      inputEl.focus();
+    }
+  }
+
+  async _editFileName(filePath, newName, isFolder = false) {
+    await editFileName(filePath, newName, isFolder);
   }
 
   async removeFileOrFolder() {
