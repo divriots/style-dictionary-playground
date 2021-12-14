@@ -5,7 +5,6 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import * as rollup from "rollup";
 import StyleDictionary from "browser-style-dictionary/browser.js";
-import mixpanel from "mixpanel-browser";
 import { repopulateFileTree } from "./file-tree-utils.js";
 import { configPaths, encodeContents } from "./index.js";
 const asyncGlob = util.promisify(glob);
@@ -68,12 +67,12 @@ function exportCSSPropsToCardFrame() {
   const insertCSS = async (cssProps) => {
     try {
       cardFrame?.contentWindow.insertCSS(cssProps);
-    } catch(e) {
+    } catch (e) {
       // If insertCSS is not available on iframe window yet, try again after 100ms
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       insertCSS(cssProps);
     }
-  }
+  };
   insertCSS(cssProps);
 }
 
@@ -121,12 +120,8 @@ export async function rerunStyleDictionaryIfSourceChanged(
   const inputFiles = await getInputFiles();
   // If no inputFiles, run was error so can't send something useful to analytics atm or encode contents in url
   if (inputFiles.length > 0) {
-    // Send to analytics that user ran style dictionary, with how many source files (default 3)
-    // to get a feeling of how much they are testing out
-    mixpanel.track("Run Dictionary", {
-      sourceFiles: inputFiles.size,
-      platforms: styleDictionaryInstance.platforms,
-    });
+    // We use fathom for analytics, here we track dictionary runs
+    window.fathom.trackGoal("XBWJBW1W", 0);
     const encoded = await encodeContents(inputFiles);
     window.location.href = `${window.location.origin}/#project=${encoded}`;
   }

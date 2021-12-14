@@ -335,6 +335,26 @@ export async function setupFileChangeHandlers() {
   });
 }
 
+export async function getAllFiles() {
+  const filePaths = await asyncGlob("**/*", { fs, nodir: true });
+
+  const allFiles = {};
+  await Promise.all(
+    filePaths.map((filePath) => {
+      return new Promise(async (resolve) => {
+        const content = await new Promise((resolve) => {
+          fs.readFile(filePath, "utf-8", (err, data) => {
+            resolve(data);
+          });
+        });
+        allFiles[filePath] = content;
+        resolve();
+      });
+    })
+  );
+  return allFiles;
+}
+
 export async function repopulateFileTree() {
   const files = await asyncGlob("**/*", { fs, mark: true });
 
