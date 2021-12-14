@@ -1,0 +1,74 @@
+diff --git a/node_modules/memfs/lib/node.js b/node_modules/memfs/lib/node.js
+index 6a7f91d..26d3dc6 100644
+--- a/node_modules/memfs/lib/node.js
++++ b/node_modules/memfs/lib/node.js
+@@ -223,16 +223,32 @@ var Link = /** @class */ (function (_super) {
+         var _this = _super.call(this) || this;
+         _this.children = {};
+         // Path to this node as Array: ['usr', 'bin', 'node'].
+-        _this.steps = [];
++        _this._steps = [];
+         // "i-node" number of the node.
+         _this.ino = 0;
+         // Number of children.
+         _this.length = 0;
+         _this.vol = vol;
+         _this.parent = parent;
+-        _this.steps = parent ? parent.steps.concat([name]) : [name];
++        _this.name = name;
++        _this.syncSteps();
+         return _this;
+     }
++    Object.defineProperty(Link.prototype, "steps", {
++        get: function () {
++            return this._steps;
++        },
++        // Recursively sync children steps, e.g. in case of dir rename
++        set: function (val) {
++            this._steps = val;
++            Object.entries(this.children).forEach(function (_a) {
++                var child = _a[1];
++                child === null || child === void 0 ? void 0 : child.syncSteps();
++            });
++        },
++        enumerable: false,
++        configurable: true
++    });
+     Link.prototype.setNode = function (node) {
+         this.node = node;
+         this.ino = node.ino;
+@@ -313,6 +329,9 @@ var Link = /** @class */ (function (_super) {
+             children: Object.keys(this.children),
+         };
+     };
++    Link.prototype.syncSteps = function () {
++        this.steps = this.parent ? this.parent.steps.concat([this.name]) : [this.name];
++    };
+     return Link;
+ }(events_1.EventEmitter));
+ exports.Link = Link;
+diff --git a/node_modules/memfs/lib/process.js b/node_modules/memfs/lib/process.js
+index 0b4cc12..4dc265a 100644
+--- a/node_modules/memfs/lib/process.js
++++ b/node_modules/memfs/lib/process.js
+@@ -14,7 +14,7 @@ exports.createProcess = void 0;
+  */
+ var maybeReturnProcess = function () {
+     if (typeof process !== 'undefined') {
+-        return process;
++        return undefined;
+     }
+     try {
+         return require('process');
+diff --git a/node_modules/memfs/lib/volume.js b/node_modules/memfs/lib/volume.js
+index 95102a8..a63dd68 100644
+--- a/node_modules/memfs/lib/volume.js
++++ b/node_modules/memfs/lib/volume.js
+@@ -1329,6 +1329,7 @@ var Volume = /** @class */ (function () {
+         }
+         // Rename should overwrite the new path, if that exists.
+         var name = newPathSteps[newPathSteps.length - 1];
++        link.name = name;
+         link.steps = __spreadArray(__spreadArray([], newPathDirLink.steps, true), [name], false);
+         newPathDirLink.setChild(link.getName(), link);
+     };

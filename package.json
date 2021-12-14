@@ -19,12 +19,13 @@
     "buffer": "^6.0.3",
     "glob": "^7.2.0",
     "lit": "^2.0.0",
-    "memfs": "^3.3.0",
+    "memfs": "^3.4.0",
     "mixpanel-browser": "^2.41.0",
     "monaco-editor": "^0.28.1",
     "pako": "^2.0.4",
     "process": "^0.11.10",
     "stream": "^0.0.2",
+    "uuid": "^8.3.2",
     "wasm-flate": "^1.0.2-browser"
   },
   "devDependencies": {

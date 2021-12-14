@@ -2,6 +2,7 @@ import fs from "fs";
 import util from "util";
 import glob from "glob";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
 import * as rollup from "rollup";
 import StyleDictionary from "browser-style-dictionary/browser.js";
 import mixpanel from "mixpanel-browser";
@@ -63,7 +64,17 @@ function exportCSSPropsToCardFrame() {
     });
     return;
   }
-  cardFrame?.contentWindow.insertCSS(cssProps);
+
+  const insertCSS = async (cssProps) => {
+    try {
+      cardFrame?.contentWindow.insertCSS(cssProps);
+    } catch(e) {
+      // If insertCSS is not available on iframe window yet, try again after 100ms
+      await new Promise(resolve => setTimeout(resolve, 100));
+      insertCSS(cssProps);
+    }
+  }
+  insertCSS(cssProps);
 }
 
 async function getInputFiles() {
@@ -87,12 +98,13 @@ async function getInputFiles() {
       });
     })
   );
-  return allFiles.filter(
-    (file) => !outputFiles.includes(file) && file !== "format-helpers.esm.js"
-  );
+  return allFiles.filter((file) => !outputFiles.includes(file));
 }
 
-export async function rerunStyleDictionaryIfSourceChanged(file) {
+export async function rerunStyleDictionaryIfSourceChanged(
+  file,
+  isFolder = false
+) {
   const previousRunError = !styleDictionaryInstance;
 
   // If previous run was okay, check whether we need a new run
@@ -100,11 +112,10 @@ export async function rerunStyleDictionaryIfSourceChanged(file) {
     const inputFiles = await getInputFiles();
     const isInputFile = inputFiles.includes(file.replace(/^\//, ""));
     // Only run style dictionary if the config or input files were changed
-    if (!isInputFile) {
+    if (!isInputFile && !isFolder) {
       return;
     }
   }
-
   await runStyleDictionary();
 
   const inputFiles = await getInputFiles();
@@ -142,6 +153,8 @@ export function findUsedConfigPath() {
  *  }
  */
 async function bundle(inputPath) {
+  const sdName = uuidv4();
+  globalThis[sdName] = StyleDictionary;
   const rollupCfg = await rollup.rollup({
     input: inputPath,
     plugins: [
@@ -162,6 +175,25 @@ async function bundle(inputPath) {
             // try to load it from our virtual FS
             return fs.readFileSync(id, "utf-8");
           }
+        },
+      },
+      {
+        name: "sd-external",
+        // Naive and simplified regex version of rollup externals global plugin just for style-dictionary import..
+        transform(code) {
+          let rewrittenCode = code;
+          let matchRes = rewrittenCode.match(
+            /import (?<id>.+?) from 'style-dictionary';/,
+            ""
+          );
+          if (matchRes) {
+            let { id } = matchRes.groups;
+            // Remove the import statement, replace the id wherever used with the global
+            rewrittenCode = rewrittenCode
+              .replace(matchRes[0], "")
+              .replace(new RegExp(id, "g"), `globalThis['${sdName}']`);
+          }
+          return rewrittenCode;
         },
       },
     ],
@@ -214,7 +246,7 @@ export default async function runStyleDictionary() {
     await newStyleDictionary.buildAllPlatforms();
     exportCSSPropsToCardFrame();
   } catch (e) {
-    console.error(`Style Dictionary error: ${e}`);
+    console.error(`Style Dictionary error: ${e.stack}`);
   } finally {
     await repopulateFileTree();
     return newStyleDictionary;
