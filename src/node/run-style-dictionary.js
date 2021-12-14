@@ -64,7 +64,17 @@ function exportCSSPropsToCardFrame() {
     });
     return;
   }
-  cardFrame?.contentWindow.insertCSS(cssProps);
+
+  const insertCSS = async (cssProps) => {
+    try {
+      cardFrame?.contentWindow.insertCSS(cssProps);
+    } catch(e) {
+      // If insertCSS is not available on iframe window yet, try again after 100ms
+      await new Promise(resolve => setTimeout(resolve, 100));
+      insertCSS(cssProps);
+    }
+  }
+  insertCSS(cssProps);
 }
 
 async function getInputFiles() {
