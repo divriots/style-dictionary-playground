@@ -555,12 +555,8 @@ class FileTree extends LitElement {
     // Add all files to zip
     const allFiles = await getAllFiles();
     await Promise.all(
-      Object.entries(allFiles).map(
-        ([key, value]) =>
-          new Promise(async (resolve) => {
-            await zipWriter.add(key, new zip.TextReader(value));
-            resolve();
-          })
+      Object.entries(allFiles).map(([key, value]) =>
+        zipWriter.add(key, new zip.TextReader(value))
       )
     );
 
