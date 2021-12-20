@@ -1,15 +1,16 @@
 import fs from "fs";
-import util from "util";
-import glob from "glob";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import * as rollup from "rollup";
 import StyleDictionary from "browser-style-dictionary/browser.js";
-import { repopulateFileTree } from "./file-tree-utils.js";
+import { repopulateFileTree, getInputFiles } from "./file-tree-utils.js";
 import { configPaths, encodeContents } from "./index.js";
-const asyncGlob = util.promisify(glob);
 
 export let styleDictionaryInstance;
+let sdInstanceSetResolve;
+export const styleDictionaryInstanceSet = new Promise((resolve) => {
+  sdInstanceSetResolve = resolve;
+});
 
 async function cleanPlatformOutputDirs() {
   if (!styleDictionaryInstance || !styleDictionaryInstance.platforms) {
@@ -74,30 +75,6 @@ function exportCSSPropsToCardFrame() {
     }
   };
   insertCSS(cssProps);
-}
-
-async function getInputFiles() {
-  const allFiles = await asyncGlob("**/*", { nodir: true, fs });
-  // without a correct SD instance, we can't really know for sure what the output files are
-  // therefore, we can't know what the input files are (tokens + other used files via relative imports)
-  if (!styleDictionaryInstance) {
-    return [];
-  }
-  const { platforms } = styleDictionaryInstance.options;
-  let outputFiles = [];
-  await Promise.all(
-    Object.entries(platforms).map(([key, platform]) => {
-      return new Promise(async (resolve) => {
-        const outFiles = await asyncGlob(`${platform.buildPath}**`, {
-          nodir: true,
-          fs,
-        });
-        outputFiles = [...outputFiles, ...outFiles];
-        resolve();
-      });
-    })
-  );
-  return allFiles.filter((file) => !outputFiles.includes(file));
 }
 
 export async function rerunStyleDictionaryIfSourceChanged(
@@ -238,6 +215,7 @@ export default async function runStyleDictionary() {
 
     newStyleDictionary = await StyleDictionary.extend(cfgObj);
     styleDictionaryInstance = newStyleDictionary;
+    sdInstanceSetResolve();
     await newStyleDictionary.buildAllPlatforms();
     exportCSSPropsToCardFrame();
   } catch (e) {
