@@ -2,9 +2,10 @@ import fs from "fs";
 import util from "util";
 import path from "path";
 import glob from "glob";
-import { configPaths, changeLang } from "./index.js";
+import { configPaths, changeLang, getContents } from "./index.js";
 import {
   styleDictionaryInstance,
+  styleDictionaryInstanceSet,
   rerunStyleDictionaryIfSourceChanged,
 } from "./run-style-dictionary.js";
 import mkdirRecursive from "./mkdirRecursive.js";
@@ -355,53 +356,61 @@ export async function getAllFiles() {
   return allFiles;
 }
 
-export async function repopulateFileTree() {
-  const files = await asyncGlob("**/*", { fs, mark: true });
+export async function getInputFiles() {
+  await styleDictionaryInstanceSet;
+  const allFiles = await asyncGlob("**/*", { nodir: true, fs });
+  const outputFiles = await getOutputFiles();
+  return allFiles.filter((file) => !outputFiles.includes(file));
+}
 
-  const outputFolders = new Set();
-  if (styleDictionaryInstance) {
-    Object.entries(styleDictionaryInstance.platforms).forEach(
-      ([key, value]) => {
-        outputFolders.add(value.buildPath.split("/")[0]);
-      }
-    );
-  } else {
+export async function getOutputFiles() {
+  // without a correct SD instance, we can't really know for sure what the output files are
+  // therefore, we can't know what the input files are (tokens + other used files via relative imports)
+  await styleDictionaryInstanceSet;
+  const { platforms } = styleDictionaryInstance.options;
+  let outputFiles = [];
+  await Promise.all(
+    Object.entries(platforms).map(([key, platform]) => {
+      return new Promise(async (resolve) => {
+        const outFiles = await asyncGlob(`${platform.buildPath}**`, {
+          nodir: true,
+          fs,
+        });
+        outputFiles = [...outputFiles, ...outFiles];
+        resolve();
+      });
+    })
+  );
+  return outputFiles;
+}
+
+export async function repopulateFileTree() {
+  if (!styleDictionaryInstance) {
     console.error(
       "Trying to repopulate file tree without a valid style-dictionary object to check which files are input vs output."
     );
   }
-  const inputFiles = files.filter((file) => {
-    return !Array.from(outputFolders).some((outputFolder) =>
-      file.startsWith(`${outputFolder}/`)
-    );
-  });
-
-  const outputFiles = files.filter((file) => !inputFiles.includes(file));
-
+  const inputFiles = await getInputFiles();
+  const outputFiles = await getOutputFiles();
   fileTreeEl.outputFiles = outputFiles;
   fileTreeEl.inputFiles = inputFiles;
-
-  mightDispatchTokens();
 }
 
-let oldTokens = [];
-function mightDispatchTokens() {
-  if (!styleDictionaryInstance) {
-    return;
-  }
-  // Naive compare of the tokens
-  if (
-    JSON.stringify(oldTokens) !== JSON.stringify(styleDictionaryInstance.tokens)
-  ) {
-    oldTokens = styleDictionaryInstance.tokens;
-    dispatchTokens();
-  }
-}
-
-export function dispatchTokens() {
+export async function dispatchTokens() {
+  await styleDictionaryInstanceSet;
   window.dispatchEvent(
     new CustomEvent("sd-tokens", {
       detail: styleDictionaryInstance.tokens,
+    })
+  );
+}
+
+export async function dispatchInputFiles() {
+  const inputFiles = await getInputFiles();
+  const contents = await getContents(inputFiles);
+  window.dispatchEvent(
+    new CustomEvent("sd-input-files", {
+      detail: contents,
     })
   );
 }

@@ -143,7 +143,7 @@ file-tree {
 .card-container {
   width: min(1000px, 80vw);
   margin: 0 auto;
-  margin-top: 5rem;
+  margin-top: 2rem;
   color: white;
 }
 
@@ -180,7 +180,7 @@ file-tree {
 
 .explainer {
   max-width: 1000px;
-  margin: 2rem auto 0 auto;
+  margin: 0 auto 0 auto;
   padding-bottom: 5rem;
   color: white;
 }
@@ -190,7 +190,13 @@ file-tree {
 }
 
 .made-for {
-  margin-top: 3em;
+  width: min(1000px, 80vw);
+  margin: 3rem auto;
+  color: white;
+}
+
+.made-for a {
+  color: #d9f8f5;
 }
 
 footer {

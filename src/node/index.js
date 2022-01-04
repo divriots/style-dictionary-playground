@@ -4,6 +4,7 @@ import {
   createInputFiles,
   setupFileChangeHandlers,
   dispatchTokens,
+  dispatchInputFiles,
   openAllFolders,
 } from "./file-tree-utils.js";
 import runStyleDictionary, {
@@ -26,7 +27,7 @@ export async function changeLang(lang) {
   monaco.editor.setModelLanguage(editor.getModel(), lang);
 }
 
-export async function encodeContents(files) {
+export async function getContents(files) {
   const contents = {};
   await Promise.all(
     files.map(async (file) => {
@@ -38,6 +39,11 @@ export async function encodeContents(files) {
       });
     })
   );
+  return contents;
+}
+
+export async function encodeContents(files) {
+  const contents = await getContents(files);
   const content = JSON.stringify(contents);
   return flate.deflate_encode(content);
 }
@@ -63,6 +69,7 @@ function switchClose(ev) {
 
 (async function () {
   window.addEventListener("sd-tokens-request", dispatchTokens);
+  window.addEventListener("sd-input-files-request", dispatchInputFiles);
   await createInputFiles();
   await runStyleDictionary();
   await openAllFolders();
