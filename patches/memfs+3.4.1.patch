@@ -1,0 +1,13 @@
+diff --git a/node_modules/memfs/lib/process.js b/node_modules/memfs/lib/process.js
+index 0b4cc12..4dc265a 100644
+--- a/node_modules/memfs/lib/process.js
++++ b/node_modules/memfs/lib/process.js
+@@ -14,7 +14,7 @@ exports.createProcess = void 0;
+  */
+ var maybeReturnProcess = function () {
+     if (typeof process !== 'undefined') {
+-        return process;
++        return undefined;
+     }
+     try {
+         return require('process');

@@ -151,7 +151,22 @@
           FileTree supports keyboard navigation. F2 to edit currently focused
           file or folder.
         </li>
-        <li>Can download all files in your current playground as a ZIP.</li>
+        <li>
+          Can download all files in your current playground as a ZIP with the
+          download button at the bottom left of the editor.
+        </li>
+        <li>
+          Supports dispatching an event to the window
+          <code>sd-tokens-request</code> which will dispatch an event to the
+          window <code>sd-tokens</code> containing all the tokens. Useful for
+          third-party integrations through iframes.
+        </li>
+        <li>
+          Supports dispatching an event to the window
+          <code>sd-input-files-request</code> which will dispatch an event to
+          the window <code>sd-input-files</code> containing all the input files,
+          rather than just the final accumulated tokens.
+        </li>
       </ul>
       <h2>How it works</h2>
       <p>
