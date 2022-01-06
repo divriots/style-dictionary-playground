@@ -68,8 +68,17 @@ function switchClose(ev) {
 }
 
 (async function () {
-  window.addEventListener("sd-tokens-request", dispatchTokens);
-  window.addEventListener("sd-input-files-request", dispatchInputFiles);
+  window.addEventListener("message", (ev) => {
+    const { data } = ev;
+    switch (data.type) {
+      case "sd-tokens-request":
+        dispatchTokens(ev);
+        break;
+      case "sd-input-files-request":
+        dispatchInputFiles(ev);
+        break;
+    }
+  });
   await createInputFiles();
   await runStyleDictionary();
   await openAllFolders();

@@ -396,21 +396,21 @@ export async function repopulateFileTree() {
   fileTreeEl.inputFiles = inputFiles;
 }
 
-export async function dispatchTokens() {
+export async function dispatchTokens(ev) {
+  const { source } = ev;
   await styleDictionaryInstanceSet;
-  window.dispatchEvent(
-    new CustomEvent("sd-tokens", {
-      detail: styleDictionaryInstance.tokens,
-    })
+  source.postMessage(
+    {
+      type: "sd-tokens",
+      tokens: styleDictionaryInstance.tokens,
+    },
+    "*"
   );
 }
 
-export async function dispatchInputFiles() {
+export async function dispatchInputFiles(ev) {
+  const { source } = ev;
   const inputFiles = await getInputFiles();
   const contents = await getContents(inputFiles);
-  window.dispatchEvent(
-    new CustomEvent("sd-input-files", {
-      detail: contents,
-    })
-  );
+  source.postMessage({ type: "sd-input-files", files: contents }, "*");
 }
