@@ -156,16 +156,32 @@
           download button at the bottom left of the editor.
         </li>
         <li>
-          Supports dispatching an event to the window
-          <code>sd-tokens-request</code> which will dispatch an event to the
-          window <code>sd-tokens</code> containing all the tokens. Useful for
-          third-party integrations through iframes.
+          Supports dispatching a MessageEvent using postMessage
+          <code
+            >{ type:
+            <span style="color: #ce9178">'sd-tokens-request'</span> }</code
+          >
+          which will dispatch a MessageEvent to the source of the request with
+          <code
+            >{ type: <span style="color: #ce9178">'sd-tokens'</span>, tokens:
+            {...} }</code
+          >
+          containing all the tokens. Useful for third-party integrations through
+          iframes.
         </li>
         <li>
-          Supports dispatching an event to the window
-          <code>sd-input-files-request</code> which will dispatch an event to
-          the window <code>sd-input-files</code> containing all the input files,
-          rather than just the final accumulated tokens.
+          Supports dispatching a MessageEvent using postMessage
+          <code
+            >{ type:
+            <span style="color: #ce9178">'sd-input-files-request'</span> }</code
+          >
+          which will dispatch an event to the window
+          <code
+            >{ type: <span style="color: #ce9178">'sd-input-files'</span>,
+            files: {...} }</code
+          >
+          containing all the input files, rather than just the final accumulated
+          tokens.
         </li>
       </ul>
       <h2>How it works</h2>
