@@ -8,6 +8,7 @@ import {
   styleDictionaryInstanceSet,
   rerunStyleDictionaryIfSourceChanged,
 } from "./run-style-dictionary.js";
+import createDictionary from "browser-style-dictionary/lib/utils/createDictionary.js";
 import mkdirRecursive from "./mkdirRecursive.js";
 import { ensureMonacoIsLoaded, editor } from "../browser/monaco.js";
 
@@ -406,6 +407,32 @@ export async function dispatchTokens(ev) {
     },
     "*"
   );
+}
+
+export async function dispatchDictionary(ev) {
+  const { source } = ev;
+  await styleDictionaryInstanceSet;
+  // Dictionary can contain methods, for postMessage cloning as a workaround
+  // we therefore have to JSON.stringify it and JSON.parse it to clone which removes functions.
+  const dictionary = JSON.parse(JSON.stringify(styleDictionaryInstance));
+  source.postMessage(
+    {
+      type: "sd-dictionary",
+      dictionary,
+    },
+    "*"
+  );
+}
+
+export async function dispatchEnrichedTokens(ev) {
+  const { source, data } = ev;
+  const { platform } = data;
+  await styleDictionaryInstanceSet;
+  const enrichedTokens = styleDictionaryInstance.exportPlatform(platform);
+  const { allTokens, tokens } = createDictionary({
+    properties: enrichedTokens,
+  });
+  source.postMessage({ type: "sd-enriched-tokens", tokens, allTokens }, "*");
 }
 
 export async function dispatchInputFiles(ev) {

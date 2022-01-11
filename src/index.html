@@ -160,28 +160,71 @@
           <code
             >{ type:
             <span style="color: #ce9178">'sd-tokens-request'</span> }</code
-          >
-          which will dispatch a MessageEvent to the source of the request with
+          >,
           <code
-            >{ type: <span style="color: #ce9178">'sd-tokens'</span>, tokens:
-            {...} }</code
+            >{ type:
+            <span style="color: #ce9178">'sd-dictionary-request'</span> }</code
           >
-          containing all the tokens. Useful for third-party integrations through
-          iframes.
-        </li>
-        <li>
-          Supports dispatching a MessageEvent using postMessage
+          or
           <code
             >{ type:
             <span style="color: #ce9178">'sd-input-files-request'</span> }</code
           >
-          which will dispatch an event to the window
+          which will dispatch a MessageEvent to the source of the request with
+          either the tokens, the current dictionary instance, or all of the
+          input files and its contents. Useful for third-party integrations
+          through iframes. Note that for postMessage cloning, dictionary
+          instance is JSON.stringified as it contains functions.
+        </li>
+      </ul>
+      <h2>Third party integration</h2>
+      <p>
+        You can load this app in an iframe with a project ID in the URL and then
+        use
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage"
+          >postMessage</a
+        >
+        to request all kinds of useful data from the style-dictionary-play
+        instance, which the app will then send back with postMessage. Use '*'
+        for origin.
+      </p>
+      <ul>
+        <li>
           <code
-            >{ type: <span style="color: #ce9178">'sd-input-files'</span>,
-            files: {...} }</code
+            >{ type:
+            <span style="color: #ce9178">'sd-tokens-request'</span> }</code
           >
-          containing all the input files, rather than just the final accumulated
-          tokens.
+          for just the rudimentary tokens object
+        </li>
+        <li>
+          <code
+            >{ type:
+            <span style="color: #ce9178">'sd-dictionary-request'</span> }</code
+          >
+          for just the rudimentary dictionary object. This object will not
+          contain any methods because those cannot be cloned and sent over
+          postMessage.
+        </li>
+        <li>
+          <code
+            >{ type:
+            <span style="color: #ce9178">'sd-enriched-tokens-request'</span>
+            }</code
+          >
+          for the full tokens and allTokens (flattened version of tokens) object
+          after running transforms and resolutions based on a specific platform.
+          This will give much more metadata about the tokens. You have to pass
+          the <code>platform</code> as a string property in the request message.
+          You can find which platforms are used by first sending an
+          sd-dictionary-request which contains the configured platforms.
+        </li>
+        <li>
+          <code
+            >{ type:
+            <span style="color: #ce9178">'sd-input-files-request'</span> }</code
+          >
+          for all input files and their contents as strings.
         </li>
       </ul>
       <h2>How it works</h2>
