@@ -5,6 +5,8 @@ import {
   setupFileChangeHandlers,
   dispatchTokens,
   dispatchInputFiles,
+  dispatchDictionary,
+  dispatchEnrichedTokens,
   openAllFolders,
 } from "./file-tree-utils.js";
 import runStyleDictionary, {
@@ -76,6 +78,12 @@ function switchClose(ev) {
         break;
       case "sd-input-files-request":
         dispatchInputFiles(ev);
+        break;
+      case "sd-dictionary-request":
+        dispatchDictionary(ev);
+        break;
+      case "sd-enriched-tokens-request":
+        dispatchEnrichedTokens(ev);
         break;
     }
   });
