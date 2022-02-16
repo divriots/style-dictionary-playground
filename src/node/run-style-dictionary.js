@@ -185,7 +185,7 @@ export default async function runStyleDictionary() {
     // If .js, we need to parse it as actual JS without resorting to eval/Function
     // Instead, we put it in a blob and create a URL from it that we can import
     // That way, malicious code would be scoped only to the blob, which is safer.
-    if (configPath.endsWith(".js")) {
+    if (configPath.match(/.(m)?js$/g)) {
       const bundled = await bundle(configPath);
       const url = URL.createObjectURL(
         new Blob([bundled], { type: "text/javascript" })
@@ -200,7 +200,7 @@ export default async function runStyleDictionary() {
     cfgObj.parsers = [
       ...(cfgObj.parsers || []),
       {
-        // matches ts, js, mjs
+        // matches js, mjs
         pattern: /\.(j|mj)s$/,
         parse: async ({ filePath }) => {
           const bundled = await bundle(filePath);

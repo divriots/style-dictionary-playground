@@ -20,6 +20,8 @@ import "../browser/index.js";
 export const configPaths = [
   "config.js",
   "sd.config.js",
+  "config.mjs",
+  "sd.config.mjs",
   "config.json",
   "sd.config.json",
 ].map((p) => path.resolve(p));

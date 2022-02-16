@@ -55,8 +55,8 @@ export async function createInputFiles() {
     fs.mkdirSync(`radii`);
 
     fs.writeFileSync(
-      // take the config.json by default
-      configPaths[2],
+      // take the .json by default
+      configPaths.find(pa => pa.endsWith('.json')),
       JSON.stringify(
         {
           source: ["**/*.tokens.json"],
