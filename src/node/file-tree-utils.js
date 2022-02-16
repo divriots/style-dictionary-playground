@@ -50,17 +50,16 @@ export async function createInputFiles() {
       })
     );
   } else {
-    fs.mkdirSync(tokensPath);
-    fs.mkdirSync(`${tokensPath}/color`);
-    fs.mkdirSync(`${tokensPath}/card`);
-    fs.mkdirSync(`${tokensPath}/radii`);
+    fs.mkdirSync(`color`);
+    fs.mkdirSync(`card`);
+    fs.mkdirSync(`radii`);
 
     fs.writeFileSync(
-      // take the config.json by default
-      configPaths[2],
+      // take the .json by default
+      configPaths.find(pa => pa.endsWith('.json')),
       JSON.stringify(
         {
-          source: ["tokens/**/*.json"],
+          source: ["**/*.tokens.json"],
           platforms: {
             css: {
               transformGroup: "css",
@@ -91,7 +90,7 @@ export async function createInputFiles() {
     );
 
     fs.writeFileSync(
-      path.join(`${tokensPath}/color`, "base.json"),
+      path.join(`color`, "base.tokens.json"),
       JSON.stringify(
         {
           color: {
@@ -112,35 +111,14 @@ export async function createInputFiles() {
     );
 
     fs.writeFileSync(
-      path.join(`${tokensPath}/color`, "base.json"),
-      JSON.stringify(
-        {
-          color: {
-            base: {
-              gray: {
-                light: { value: "#CCCCCC" },
-                medium: { value: "#999999" },
-                dark: { value: "#111111" },
-              },
-              red: { value: "#FF0000" },
-              green: { value: "#00FF00" },
-            },
-          },
-        },
-        null,
-        2
-      )
-    );
-
-    fs.writeFileSync(
-      path.join(`${tokensPath}/color`, "font.json"),
+      path.join(`color`, "font.tokens.json"),
       JSON.stringify(
         {
           color: {
             font: {
-              base: { value: "{color.base.red.value}" },
-              secondary: { value: "{color.base.green.value}" },
-              tertiary: { value: "{color.base.gray.dark.value}" },
+              base: { value: "{color.base.red}" },
+              secondary: { value: "{color.base.green}" },
+              tertiary: { value: "{color.base.gray.dark}" },
             },
           },
         },
@@ -150,28 +128,28 @@ export async function createInputFiles() {
     );
 
     fs.writeFileSync(
-      path.join(`${tokensPath}/card`, "card.json"),
+      path.join(`card`, "card.tokens.json"),
       JSON.stringify(
         {
           card: {
             border: {
               radius: {
                 mobile: {
-                  value: "{radii.none.value}",
+                  value: "{radii.none}",
                 },
                 desktop: {
-                  value: "{radii.sm.value}",
+                  value: "{radii.sm}",
                 },
               },
             },
             heading: {
               color: {
-                value: "{color.font.base.value}",
+                value: "{color.font.base}",
               },
             },
             text: {
               color: {
-                value: "{color.font.tertiary.value}",
+                value: "{color.font.tertiary}",
               },
             },
           },
@@ -182,7 +160,7 @@ export async function createInputFiles() {
     );
 
     fs.writeFileSync(
-      path.join(`${tokensPath}/radii`, "base.json"),
+      path.join(`radii`, "base.tokens.json"),
       JSON.stringify(
         {
           radii: {
