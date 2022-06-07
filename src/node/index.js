@@ -1,5 +1,7 @@
 import path from "path";
 import fs from "fs";
+import prettier from "prettier";
+import babel from "@babel/parser";
 import {
   createInputFiles,
   setupFileChangeHandlers,
@@ -58,7 +60,13 @@ async function switchToJS(ev) {
     ev.target.parentElement.style.display = "none";
     const contents = fs.readFileSync(configPath, "utf-8");
     const newPath = `${configPath.split(".json")[0]}.js`;
-    const newContents = `export default ${contents};`;
+    const newContents = prettier.format(`export default ${contents};`, {
+      // explicitly use babel parser, just parser: "babel" will not work,
+      // rollup won't be smart enough to understand to put babel parser in
+      // final bundle like that because prettier will try to find and use it
+      // under the hood (using its own resolution logic??)
+      parser: (text) => babel.parse(text, { sourceType: "module" }),
+    });
     fs.unlinkSync(configPath);
     fs.writeFileSync(newPath, newContents, "utf-8");
     await rerunStyleDictionaryIfSourceChanged(newPath);

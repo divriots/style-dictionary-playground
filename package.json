@@ -13,6 +13,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@babel/parser": "^7.17.9",
     "@lion/core": "^0.18.4",
     "@lion/overlays": "^0.26.1",
     "@zip.js/zip.js": "^2.3.19",
@@ -23,6 +24,7 @@
     "memfs": "^3.4.1",
     "monaco-editor": "^0.28.1",
     "pako": "^2.0.4",
+    "prettier": "^2.6.2",
     "process": "^0.11.10",
     "stream": "^0.0.2",
     "uuid": "^8.3.2",
