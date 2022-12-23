@@ -245,7 +245,7 @@ class FileTree extends LitElement {
         ?.name || iconDefinitions.defaultIcon.name;
     return html`<img
       alt="file icon"
-      src="https://unpkg.com/material-icon-theme@3.7.1/icons/${icon}.svg"
+      src="https://cdn.jsdelivr.net/npm/material-icon-theme@3.7.1/icons/${icon}.svg"
     />`;
   }
 
