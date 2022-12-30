@@ -23,8 +23,8 @@ function onAmdLoaderError(err) {
 }
 
 export function ensureMonacoIsLoaded(
-  // srcPath = 'https://unpkg.com/monaco-editor@0.29.1/dev' // <-- for debugging
-  srcPath = "https://unpkg.com/monaco-editor@0.29.1/min"
+  // srcPath = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.29.1/dev' // <-- for debugging
+  srcPath = "https://cdn.jsdelivr.net/npm/monaco-editor@0.29.1/min"
 ) {
   return new Promise((resolve, reject) => {
     if (monaco) {
