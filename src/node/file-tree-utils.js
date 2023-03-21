@@ -56,7 +56,7 @@ export async function createInputFiles() {
 
     fs.writeFileSync(
       // take the .json by default
-      configPaths.find(pa => pa.endsWith('.json')),
+      configPaths.find((pa) => pa.endsWith(".json")),
       JSON.stringify(
         {
           source: ["**/*.tokens.json"],
@@ -269,7 +269,6 @@ export async function saveCurrentFile() {
     });
   });
   selectedFileBtn.removeAttribute("unsaved");
-
   await rerunStyleDictionaryIfSourceChanged(`/${selectedFile}`);
 }
 
