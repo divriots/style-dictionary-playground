@@ -17,7 +17,7 @@
     "@lion/core": "^0.18.4",
     "@lion/overlays": "^0.26.1",
     "@zip.js/zip.js": "^2.3.19",
-    "browser-style-dictionary": "^3.1.1-browser.0",
+    "browser-style-dictionary": "^3.1.1-browser.2",
     "buffer": "^6.0.3",
     "glob": "^7.2.0",
     "lit": "^2.0.0",
