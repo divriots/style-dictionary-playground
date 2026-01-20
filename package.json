@@ -4,6 +4,10 @@
   "description": "Style once, use everywhere. A build system for creating cross-platform styles.",
   "license": "MIT",
   "author": "divRiots <joren@divriots.com>",
+  "homepage": "https://www.style-dictionary-play.dev/",
+  "bugs": {
+    "url": "https://github.com/divriots/style-dictionary-playground/issues"
+  },
   "repository": "https://github.com/divriots/style-dictionary-playground",
   "main": "index.js",
   "files": [],
